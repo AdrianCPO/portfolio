@@ -1,0 +1,36 @@
+---
+const { title = "Portfolio", description = "" } = Astro.props;
+import "../styles/global.css";
+---
+<html lang="sv" class="h-full">
+  <head>
+   
+ 
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+     <!-- ... -->
+  <base href={import.meta.env.BASE_URL} />
+  <link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}favicon.svg`} />
+  <!-- ... -->
+
+    <!-- Sätt tema tidigt för att undvika FOUC -->
+    <script is:inline>
+      (() => {
+        const saved = localStorage.getItem("theme");
+        const system = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        const theme = saved ?? system;
+        document.documentElement.classList.toggle("dark", theme === "dark");
+      })();
+    </script>
+  </head>
+  <body class="min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+    <slot name="header" />
+    <main class="mx-auto max-w-5xl px-4 py-8">
+      <slot />
+    </main>
+    <slot name="footer" />
+  </body>
+</html>
