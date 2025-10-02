@@ -32,6 +32,6 @@ const projects: Project[] = raw
 <Base title="Projekt – Adrian">
   <Fragment slot="header"><Nav client:load /></Fragment>
   <h1 class="text-2xl font-bold mb-4">Projekt</h1>
-  <ProjectsGrid items={projects} client:load />
-  <Fragment slot="footer"><Footer client:load /></Fragment>
+  <ProjectsGrid items={projects} />        <!-- ← ta bort client:load -->
+  <Fragment slot="footer"><Footer /></Fragment>   <!-- ← ta bort client:load -->
 </Base>

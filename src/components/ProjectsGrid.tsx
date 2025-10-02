@@ -1,4 +1,4 @@
-
+// src/components/ProjectsGrid.tsx
 export type Project = {
   slug: string;
   title: string;
@@ -10,9 +10,15 @@ export type Project = {
   date?: string | null;
 };
 
-type Props = {
-  items: Project[];
-};
+type Props = { items: Project[] };
+
+// Joinar säkert BASE_URL + path (hanterar /-dubletter)
+function joinBase(path: string) {
+  const base = (import.meta.env.BASE_URL ?? "/") as string;
+  const b = base.endsWith("/") ? base.slice(0, -1) : base;
+  const p = path.startsWith("/") ? path.slice(1) : path;
+  return `${b}/${p}`;
+}
 
 export default function ProjectsGrid({ items }: Props) {
   return (
@@ -20,7 +26,7 @@ export default function ProjectsGrid({ items }: Props) {
       {items.map((p) => (
         <a
           key={p.slug}
-          href={`/projects/${p.slug}`}
+          href={joinBase(`projects/${p.slug}/`)}
           className="block rounded-xl border p-4 hover:shadow-md transition"
         >
           {p.image && (

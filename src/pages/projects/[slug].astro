@@ -2,32 +2,27 @@
 import Base from "../../layouts/Base.astro";
 import Nav from "../../components/Nav.tsx";
 import Footer from "../../components/Footer.tsx";
-import { getCollection, type CollectionEntry } from "astro:content";
+import { getCollection } from "astro:content";
 
-const toUrl = (p?: string) =>
-  p ? new URL(p.replace(/^\//, ""), import.meta.env.BASE_URL).pathname : undefined;
+// Säker join av BASE_URL + path (hanterar saknad/extra slash)
+function joinBase(path: string) {
+  const base = (import.meta.env.BASE_URL ?? "/") as string;
+  const b = base.endsWith("/") ? base.slice(0, -1) : base;
+  const p = path.startsWith("/") ? path.slice(1) : path;
+  return `${b}/${p}`;
+}
 
 export async function getStaticPaths() {
   const entries = await getCollection("projects");
-  return entries.map((entry: CollectionEntry<"projects">) => ({
-    params: {
-      // saknar "slug" i typerna → härleder från id
-      slug: entry.id.split("/").pop()?.replace(/\.(md|mdx)$/, "") ?? entry.id,
-    },
+  return entries.map((entry) => ({
+    params: { slug: entry.slug },   // använd entry.slug direkt
     props: { entry },
   }));
 }
 
-const { entry } = Astro.props as {
-  entry: {
-    id: string;
-    data: any;
-    rendered?: { Content: any };
-  };
-};
-
-const { title, summary, tags, repo, demo, image } = entry.data;
-const rendered = entry.rendered;
+const { entry } = Astro.props;
+const { title, summary, tags = [], repo, demo, image } = entry.data;
+const { Content } = await entry.render();
 ---
 <Base title={`${title} – Projekt`}>
   <Fragment slot="header"><Nav client:load /></Fragment>
@@ -36,7 +31,7 @@ const rendered = entry.rendered;
     <header class="mb-6">
       <h1 class="mb-2">{title}</h1>
       <div class="flex flex-wrap gap-2 text-xs">
-        {tags?.map((t: string) => <span class="px-2 py-0.5 border rounded">{t}</span>)}
+        {tags.map((t: string) => <span class="px-2 py-0.5 border rounded">{t}</span>)}
       </div>
       {summary && <p class="opacity-80 mt-2">{summary}</p>}
       <div class="mt-3 flex gap-3 text-sm">
@@ -45,9 +40,10 @@ const rendered = entry.rendered;
       </div>
     </header>
 
-    {image && <img src={toUrl(image)} alt="" />}
-    {rendered && <rendered.Content />}
+    {image && <img src={joinBase(image)} alt="" class="rounded-xl" />}
+
+    <Content />
   </article>
 
-  <Fragment slot="footer"><Footer client:load /></Fragment>
+  <Fragment slot="footer"><Footer /></Fragment>   
 </Base>
