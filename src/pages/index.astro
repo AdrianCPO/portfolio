@@ -134,7 +134,7 @@ const featured = allProjects.slice(0, 3);
       </p>
     </div>
   </section>
-  <BackgroundCards client:load items={bgItems} />
+  <BackgroundCards client:load items={bgItems} inertiaMs={600} scrollStretch={1.8} />
 
   <!-- Utvalda projekt -->
   {featured.length ? (
