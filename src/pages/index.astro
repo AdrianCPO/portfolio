@@ -4,34 +4,159 @@ import Nav from "../components/Nav.tsx";
 import Footer from "../components/Footer.tsx";
 import ProjectsGrid, { type Project } from "../components/ProjectsGrid.tsx";
 import { getCollection, type CollectionEntry } from "astro:content";
+import BackgroundCards from "../components/BackgroundCards.tsx";
 
-// Joinar BASE_URL + relativ path utan att använda new URL()
 const withBase = (p?: string) => {
   if (!p) return undefined;
-  const base = import.meta.env.BASE_URL || '/';
-  const baseTrim = base.endsWith('/') ? base.slice(0, -1) : base;
-  const pathTrim = p.startsWith('/') ? p.slice(1) : p;
-  return `${baseTrim}/${pathTrim}`;
+  const base = import.meta.env.BASE_URL || "/";
+  const b = base.endsWith("/") ? base.slice(0, -1) : base;
+  const pp = p.startsWith("/") ? p.slice(1) : p;
+  return `${b}/${pp}`;
 };
 
+const name = "Adrian";
+const titlePrimary = "Frontendutvecklare";
+const titleSecondary = "Ortopedingenjör";
+const intro = `Jag brinner för att bygga tillgängliga, prestandaoptimerade gränssnitt.
+Med över 10 års erfarenhet som ortopedingenjör tar jag med mig ett användarcentrerat,
+analytiskt arbetssätt in i webbutveckling – där funktion möter form.`;
+
+const avatar = withBase("/images/avatar.jpg"); // valfritt
+const location = "Malmö, Sverige";
+const availability = "Öppen för jobb- och frilansuppdrag";
+const email = "adrianjonsson@hotmail.com"; // byt
+const links = [
+  { href: "https://github.com/AdrianCPO", label: "GitHub" },
+  { href: "https://www.linkedin.com/in/adrian-jönsson-718884330", label: "LinkedIn" },
+];
+
+// Hämta projekt och ta ut de 3 senaste
+
+const bgRaw = await getCollection("backgrounds");
+const bgItems = bgRaw
+  .sort((a, b) => (a.data.order ?? 999) - (b.data.order ?? 999) || a.data.title.localeCompare(b.data.title))
+  .slice(0, 3)
+  .map((p: CollectionEntry<"backgrounds">) => ({
+    slug: p.slug,
+    title: p.data.title,
+    summary: p.data.summary,
+    image: withBase(p.data.image),
+  }));
+
 const raw = await getCollection("projects");
-const projects: Project[] = raw
+const allProjects: Project[] = raw
   .map((p: CollectionEntry<"projects">) => ({
-    // Din version saknar "slug" i typerna: härled från filnamn
     slug: p.id.split("/").pop()?.replace(/\.(md|mdx)$/, "") ?? p.id,
     title: p.data.title,
     summary: p.data.summary,
     tags: p.data.tags,
-    image: withBase(p.data.image), // ⬅️ ersätter new URL
+    image: withBase(p.data.image),
     repo: p.data.repo,
     demo: p.data.demo,
-    date: p.data.date,
+    date: p.data.date ?? null,
   }))
   .sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""));
+
+const featured = allProjects.slice(0, 3);
 ---
-<Base title="Projekt – Adrian">
+
+<Base title={`${name} – Profil`}>
   <Fragment slot="header"><Nav client:load /></Fragment>
-  <h1 class="text-2xl font-bold mb-4">Projekt</h1>
-  <ProjectsGrid items={projects} />        <!-- ← ta bort client:load -->
-  <Fragment slot="footer"><Footer /></Fragment>   <!-- ← ta bort client:load -->
+
+  <!-- HERO -->
+  <section class="mx-auto max-w-5xl px-0 py-6 sm:py-10">
+    <div class="grid gap-6 sm:grid-cols-[auto,1fr] sm:items-center">
+      {avatar && (
+        <img
+          src={avatar}
+          alt={`Foto på ${name}`}
+          width="120"
+          height="120"
+          class="rounded-full border border-slate-200/60 dark:border-slate-700/60"
+        />
+      )}
+      <div>
+        <h1 class="text-3xl sm:text-4xl font-bold tracking-tight">{name}</h1>
+        <p class="mt-1 text-lg">
+          {titlePrimary} · <span class="opacity-80">{titleSecondary}</span>
+        </p>
+        <p class="mt-4 max-w-2xl leading-relaxed opacity-90">{intro}</p>
+
+        <div class="mt-6 flex flex-wrap gap-3">
+          <a
+            href={withBase("projects/")}
+            class="rounded-xl bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 px-4 py-2 hover:opacity-90"
+            >Se projekt</a
+          >
+          <a
+            href={withBase("contact/")}
+            class="rounded-xl border px-4 py-2 hover:shadow-sm"
+            >Kontakta mig</a
+          >
+        </div>
+      </div>
+    </div>
+
+    <!-- Snabbfakta -->
+    <div class="mt-8 grid gap-3 sm:grid-cols-3 text-sm">
+      <div class="rounded-lg border p-3">
+        <div class="font-semibold">Plats</div>
+        <div class="opacity-80">{location}</div>
+      </div>
+      <div class="rounded-lg border p-3">
+        <div class="font-semibold">Tillgänglighet</div>
+        <div class="opacity-80">{availability}</div>
+      </div>
+      <div class="rounded-lg border p-3">
+        <div class="font-semibold">Kontakt</div>
+        <div class="opacity-80">
+          <a class="underline" href={`mailto:${email}`}>{email}</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Skills -->
+    <div class="mt-10">
+      <h2 class="text-xl font-semibold mb-3">Tekniker jag jobbar med</h2>
+      <div class="flex flex-wrap gap-2 text-xs">
+        {["Astro","React","TypeScript","Tailwind","Accessibility","Performance","Vite"].map((t) => (
+          <span class="px-2 py-1 border rounded">{t}</span>
+        ))}
+      </div>
+    </div>
+
+    <!-- Bro mellan ortopedteknik & frontend -->
+    <div class="mt-10 rounded-xl border p-4">
+      <h3 class="font-semibold mb-2">Varför ortopedingenjör → frontend?</h3>
+      <p class="opacity-90">
+        I ortopedteknik handlar allt om passform, funktion och att lyssna på användaren.
+        Samma principer guidar mig i UI/UX: empati, noggrann problemlösning och iterativt arbete.
+      </p>
+    </div>
+  </section>
+  <BackgroundCards client:load items={bgItems} enableHoverTrail={false} />
+
+  <!-- Utvalda projekt -->
+  {featured.length ? (
+    <section class="mx-auto max-w-5xl mt-4">
+      <div class="flex items-baseline justify-between mb-3">
+        <h2 class="text-xl font-semibold">Utvalda projekt</h2>
+        <a class="text-sm underline" href={withBase("projects/")}>Visa alla</a>
+      </div>
+      <ProjectsGrid items={featured} />
+    </section>
+  ) : null}
+
+  <!-- Sociala länkar -->
+  {links.length ? (
+    <section class="mx-auto max-w-5xl mt-8">
+      <ul class="flex flex-wrap gap-4 text-sm">
+        {links.map((l) => (
+          <li><a class="underline" href={l.href} target="_blank" rel="noopener">{l.label}</a></li>
+        ))}
+      </ul>
+    </section>
+  ) : null}
+
+  <Fragment slot="footer"><Footer /></Fragment>
 </Base>

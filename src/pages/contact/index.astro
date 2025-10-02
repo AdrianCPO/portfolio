@@ -1,0 +1,43 @@
+---
+
+import Base from "../../layouts/Base.astro";
+import Nav from "../../components/Nav";
+import Footer from "../../components/Footer";
+---
+
+<Base title="Kontakt – Adrian">
+  <Fragment slot="header"><Nav client:load /></Fragment>
+
+  <section class="mx-auto max-w-2xl">
+    <h1 class="text-3xl font-bold mb-6">Kontakt</h1>
+
+    <p class="mb-6 leading-relaxed">
+      Vill du komma i kontakt med mig? Skriv direkt via mejl / sociala medier.
+    </p>
+
+    <!-- Kontaktinfo -->
+    <div class="mb-10 space-y-2 text-sm">
+      <p>
+        <span class="font-semibold">E-post:</span>
+        <a class="underline" href="mailto:adrianjonsson@hotmail.com">
+          adrianjonsson@hotmail.com
+        </a>
+      </p>
+      <p>
+        <span class="font-semibold">LinkedIn:</span>
+        <a class="underline" href="https://www.linkedin.com/in/adrian-j%C3%B6nsson-718884330/" target="_blank" rel="noopener">
+          linkedin.com/in/adrian-jönsson-718884330
+        </a>
+      </p>
+      <p>
+        <span class="font-semibold">GitHub:</span>
+        <a class="underline" href="https://github.com/AdrianCPO" target="_blank" rel="noopener">
+          github.com/AdrianCPO
+        </a>
+      </p>
+    </div>
+
+    
+
+  <Fragment slot="footer"><Footer /></Fragment>
+</Base>
