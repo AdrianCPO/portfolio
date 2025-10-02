@@ -1,15 +1,15 @@
-import { z, defineCollection } from "astro:content";
+import { defineCollection, z } from "astro:content";
 
 const projects = defineCollection({
   type: "content",
   schema: z.object({
     title: z.string(),
-    summary: z.string(),
-    tags: z.array(z.enum(["React","Vue","Svelte","Vanilla","Node","Design"])),
-    image: z.string().optional(),   // t.ex. '/images/xyz.jpg' i /public
+    summary: z.string().optional(),
+    tags: z.array(z.string()).optional(),
+    image: z.string().optional(),   // ⬅️ sträng, inte image()
     repo: z.string().url().optional(),
     demo: z.string().url().optional(),
-    date: z.string().optional(),    // ISO-datum för sortering
+    date: z.string().optional(),
   }),
 });
 

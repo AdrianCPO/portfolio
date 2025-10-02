@@ -1,0 +1,53 @@
+---
+import Base from "../../layouts/Base.astro";
+import Nav from "../../components/Nav.tsx";
+import Footer from "../../components/Footer.tsx";
+import { getCollection, type CollectionEntry } from "astro:content";
+
+const toUrl = (p?: string) =>
+  p ? new URL(p.replace(/^\//, ""), import.meta.env.BASE_URL).pathname : undefined;
+
+export async function getStaticPaths() {
+  const entries = await getCollection("projects");
+  return entries.map((entry: CollectionEntry<"projects">) => ({
+    params: {
+      // saknar "slug" i typerna → härleder från id
+      slug: entry.id.split("/").pop()?.replace(/\.(md|mdx)$/, "") ?? entry.id,
+    },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props as {
+  entry: {
+    id: string;
+    data: any;
+    rendered?: { Content: any };
+  };
+};
+
+const { title, summary, tags, repo, demo, image } = entry.data;
+const rendered = entry.rendered;
+---
+<Base title={`${title} – Projekt`}>
+  <Fragment slot="header"><Nav client:load /></Fragment>
+
+  <article class="prose prose-slate dark:prose-invert max-w-none">
+    <header class="mb-6">
+      <h1 class="mb-2">{title}</h1>
+      <div class="flex flex-wrap gap-2 text-xs">
+        {tags?.map((t: string) => <span class="px-2 py-0.5 border rounded">{t}</span>)}
+      </div>
+      {summary && <p class="opacity-80 mt-2">{summary}</p>}
+      <div class="mt-3 flex gap-3 text-sm">
+        {repo && <a class="underline" href={repo}>GitHub</a>}
+        {demo && <a class="underline" href={demo}>Demo</a>}
+      </div>
+    </header>
+
+    {image && <img src={toUrl(image)} alt="" />}
+    {rendered && <rendered.Content />}
+  </article>
+
+  <Fragment slot="footer"><Footer client:load /></Fragment>
+</Base>
