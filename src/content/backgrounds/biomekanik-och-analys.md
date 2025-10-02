@@ -1,6 +1,6 @@
 ---
 title: "Biomekanik & analys"
-image: "/images/bg-biomechanics.jpg"
+image: "/images/ortos.png"
 summary: "Gånganalys, belastning, ergonomi & funktion."
 order: 3
 ---

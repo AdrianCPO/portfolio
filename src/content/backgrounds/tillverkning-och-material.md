@@ -1,6 +1,6 @@
 ---
 title: "Tillverkning & material"
-image: "/images/bg-fabrication.jpg"
+image: "/images/inlägg.png"
 summary: "Prototypning, materialval, precision & kvalitetssäkring."
 order: 2
 ---

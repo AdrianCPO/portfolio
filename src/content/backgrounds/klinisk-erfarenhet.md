@@ -1,6 +1,6 @@
 ---
 title: "Klinisk erfarenhet"
-image: "/images/bg-clinic.jpg"
+image: "/images/underbensprotes.png"
 summary: "Patientbemötande, behovsanalys, mätning & uppföljning."
 order: 1
 ---
