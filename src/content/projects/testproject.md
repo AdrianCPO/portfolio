@@ -9,13 +9,13 @@ date: "2025-09-01"
 ---
 
 ### Problem
-Beskriv problemet kort.
+Beskriv probleme
 
 ### Lösning
-Berätta hur du löste det.
+Berätta hur jag löste det.
 
 ### Stack
 Astro, Tailwind
 
 ### Lärdomar
-Något du tog med dig.
+Vad jag lärde mig av detta projekt
