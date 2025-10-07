@@ -31,7 +31,6 @@ const links = [
   { href: "https://www.linkedin.com/in/adrian-jönsson-718884330", label: "LinkedIn" },
 ];
 
-// Hämta data
 const bgRaw = await getCollection("backgrounds");
 const bgItems = bgRaw
   .sort((a, b) => (a.data.order ?? 999) - (b.data.order ?? 999) || a.data.title.localeCompare(b.data.title))
@@ -63,7 +62,6 @@ const featured = allProjects.slice(0, 3);
 <Base title={`${name} – Profil`}>
   <Fragment slot="header"><Nav client:load /></Fragment>
 
-  <!-- HERO (ikonen får aldrig in i den här zonen) -->
   <section class="mx-auto max-w-5xl px-0 py-6 sm:py-10">
     <div class="grid gap-6 sm:grid-cols-[auto,1fr] sm:items-center">
       <div>
@@ -93,7 +91,6 @@ const featured = allProjects.slice(0, 3);
     </div>
   </section>
 
-  <!-- Varför-sektion -->
   <section class="mx-auto max-w-6xl mt-10">
     <div class="rounded-xl border p-6">
       <h3 class="font-semibold mb-2 text-lg">Varför ortopedingenjör → frontend?</h3>
@@ -104,9 +101,7 @@ const featured = allProjects.slice(0, 3);
     </div>
   </section>
 
-  <!-- 2 kolumner -->
   <section class="mx-auto max-w-6xl mt-10 grid md:grid-cols-[minmax(0,1fr)_420px] gap-10 items-start">
-    <!-- Vänster: triggers -->
     <div class="space-y-10">
       <div id="skills-wrap" class="rounded-xl border p-4 min-h-[420px]">
         <h2 class="text-lg font-semibold mb-3">Färdigheter</h2>
@@ -139,31 +134,36 @@ const featured = allProjects.slice(0, 3);
     </div>
 
     <!-- Höger: sticky lane + osynliga slots (döljs på <xl) -->
-    <div class="relative hidden xl:block">
-      <!-- Sticky lane: position:sticky + relative så att ikonen positioneras 100% inuti kolumnen -->
-      <div id="icon-lane" class="sticky top-24 relative">
-        <!-- Osynliga slots – höjd matchas med vänster via JS -->
-        <div id="slot-human" class="opacity-0 pointer-events-none select-none"></div>
-        <div id="slot-heart" class="opacity-0 pointer-events-none select-none"></div>
-        <div id="slot-dev"   class="opacity-0 pointer-events-none select-none"></div>
+  <div class="relative hidden xl:block">
+  <!-- lyft lane lite: top-16 -->
+  <div id="icon-lane" class="sticky top-16 relative">
+    <!-- slots – höjd synkas via komponenten -->
+    <div id="slot-human" class="opacity-0 pointer-events-none"></div>
+    <div id="slot-heart" class="opacity-0 pointer-events-none"></div>
+    <div id="slot-dev"   class="opacity-0 pointer-events-none"></div>
 
-        <!-- Ikon (absolut i lane) -->
-        <GsapMorphLottie
-          client:load
-          jsonUrl={animUrl}
-          stateMarkers={["human1","heart1","dev"]}
-          /* triggar från vänsterkolumnen */
-          cardSelectors={["#skills-wrap","#heart-wrap","#projects-wrap"]}
-          /* absoluta mål i högerkolumnen */
-          slotSelectors={["#slot-human","#slot-heart","#slot-dev"]}
-          laneSelector="#icon-lane"
-          sizePx={1080}                    /* din AE 1080x1080 – skalar snyggt */
-          scale={1.4}                      /* förstora utan att sabba koordinaterna */
-          segmentDurationMs={900}
-          stateOffsetsPx={[{x:0,y:0},{x:0,y:0},{x:0,y:0}]}
-        />
-      </div>
-    </div>
+       <GsapMorphLottie
+      client:load
+      jsonUrl={animUrl}
+      stateMarkers={["human1","heart1","dev"]}
+      cardSelectors={["#skills-wrap","#heart-wrap","#projects-wrap"]}
+      slotSelectors={["#slot-human","#slot-heart","#slot-dev"]}
+      laneSelector="#icon-lane"
+      sizePx={1080}
+      scale={1.45}
+      initialIndex={0}
+      segmentDurationMs={650}
+      moveDuration={0.5}
+
+    
+      stateOffsetsPx={[
+        { x: -140, y: -200 },  // human
+        { x: -140, y: -200 },  // heart
+        { x: -140, y: -200 },  // dev
+      ]}
+    />
+  </div>
+</div>
   </section>
 
   {links.length ? (
