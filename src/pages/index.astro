@@ -6,13 +6,13 @@ import ProjectsGrid, { type Project } from "../components/ProjectsGrid.tsx";
 import { getCollection, type CollectionEntry } from "astro:content";
 import GsapMorphLottie from "../components/GsapMorphLottie.tsx";
 
-// Hjälptyper
+// Typer
 type BgEntry = CollectionEntry<"backgrounds">;
 type ProjEntry = CollectionEntry<"projects">;
 type BgItem = { slug: string; title: string; summary?: string; image?: string | undefined };
 type Link = { href: string; label: string };
 
-// Säker join av BASE_URL + path
+// Helper
 const withBase = (p?: string) => {
   if (!p) return undefined;
   const base = import.meta.env.BASE_URL || "/";
@@ -38,13 +38,12 @@ const links: Link[] = [
   { href: "https://www.linkedin.com/in/adrian-jönsson-718884330", label: "LinkedIn" },
 ];
 
-// Hämta och förbered "backgrounds" (korten under Färdigheter…)
+// BACKGROUNDS
 const bgRaw = await getCollection("backgrounds");
 const bgItems: BgItem[] = bgRaw
-  .sort(
-    (a: BgEntry, b: BgEntry) =>
-      (a.data.order ?? 999) - (b.data.order ?? 999) ||
-      a.data.title.localeCompare(b.data.title)
+  .sort((a: BgEntry, b: BgEntry) =>
+    (a.data.order ?? 999) - (b.data.order ?? 999) ||
+    a.data.title.localeCompare(b.data.title)
   )
   .slice(0, 3)
   .map((p: BgEntry) => ({
@@ -54,7 +53,7 @@ const bgItems: BgItem[] = bgRaw
     image: withBase(p.data.image),
   }));
 
-// Hämta och förbered projekt (MD-case)
+// PROJECTS
 const raw = await getCollection("projects");
 const allProjects: Project[] = raw
   .map((p: ProjEntry): Project => ({
@@ -104,7 +103,7 @@ const featured = allProjects.slice(0, 3);
     </div>
   </section>
 
-  <section class="mx-auto max-w-6xl mt-10">
+  <section class="mx-auto max-w-7xl mt-10 grid md:grid-cols-[minmax(0,1fr)_520px] gap-10 items-start">
     <div class="rounded-xl border p-6">
       <h3 class="font-semibold mb-2 text-lg">Varför ortopedingenjör → frontend?</h3>
       <p class="opacity-90">
@@ -114,26 +113,22 @@ const featured = allProjects.slice(0, 3);
     </div>
   </section>
 
-  <section class="mx-auto max-w-6xl mt-10 grid md:grid-cols-[minmax(0,1fr)_420px] gap-10 items-start">
+  <!-- Viktigt: 1 kolumn tills XL (animation finns bara på XL+) -->
+  <section class="mx-auto max-w-6xl mt-10 grid xl:grid-cols-[minmax(0,1fr)_460px] gap-10 items-start">
     <div class="space-y-10">
-      <!-- Färdigheter – klickbara, nedersta kortet tar full bredd -->
-      <div id="skills-wrap" class="rounded-xl border p-4 min-h-[420px]">
+      <!-- FÄRDIGHETER: alltid 1 kolumn på mobil+tablet, 2 kolumn på XL -->
+      <div id="skills-wrap" class="rounded-xl border p-4">
         <h2 class="text-lg font-semibold mb-3">Färdigheter som ortopedingenjör</h2>
-        <div class="grid sm:grid-cols-2 gap-2">
+
+        <div class="grid grid-cols-1 gap-3 xl:grid-cols-2">
           {bgItems.map((it: BgItem, i: number) => (
             <a
               href={withBase(`cpo/#bg-card-${i + 1}`)}
-              class={`flex flex-col items-center justify-center text-center border rounded-lg p-2 hover:shadow-sm transition bg-white dark:bg-slate-900 ${i === 2 ? "sm:col-span-2" : ""}`}
+              class={`flex flex-col items-center justify-center text-center border rounded-lg p-3 hover:shadow-sm transition bg-white dark:bg-slate-900 ${i === 2 ? "xl:col-span-2" : ""}`}
             >
               {it.image && (
-                <div class="h-20 w-full flex items-center justify-center mb-1 overflow-hidden">
-                  <img
-                    src={it.image}
-                    alt={it.title}
-                    class="h-full w-auto object-contain"
-                    loading="lazy"
-                    decoding="async"
-                  />
+                <div class="h-28 w-full flex items-center justify-center mb-1 overflow-hidden">
+                  <img src={it.image} alt={it.title} class="h-full w-auto object-contain" loading="lazy" decoding="async" />
                 </div>
               )}
               <h3 class="font-medium text-sm">{it.title}</h3>
@@ -143,44 +138,67 @@ const featured = allProjects.slice(0, 3);
         </div>
       </div>
 
-      <div id="heart-wrap" class="rounded-xl border p-4 flex items-center justify-center min-h-[280px] bg-slate-50 dark:bg-slate-800">
+      <div id="heart-wrap" class="rounded-xl border p-4 flex items-center justify-center min-h-[220px] bg-slate-50 dark:bg-slate-800">
         <p class="text-base opacity-70 italic">Empati & passion – hjärtat i min utveckling ❤️</p>
       </div>
 
-      <div id="projects-wrap" class="rounded-xl border p-4 min-h-[420px]">
+      <!-- PROJEKT: 1 kolumn på mobil+tablet (påverkar bara startsidan) -->
+      <div id="projects-wrap" class="rounded-xl border p-4">
         <div class="flex items-baseline justify-between mb-3">
           <h2 class="text-lg font-semibold">Utvalda projekt som utvecklare</h2>
           <a class="text-xs underline" href={withBase("projects/")}>Visa alla</a>
         </div>
-        <ProjectsGrid items={featured} />
+        <!-- En enkel 1-kolumns render här (så vi rör inte componentens default för andra sidor) -->
+        <div class="grid grid-cols-1 gap-4 xl:hidden">
+          {featured.map((p) => (
+            <a href={withBase(`projects/${p.slug}/`)} class="block overflow-hidden rounded-xl border transition hover:shadow-md">
+              {p.image && (
+                <div class="relative w-full overflow-hidden rounded-t-xl bg-slate-50 dark:bg-slate-900 h-40">
+                  <img src={p.image} alt="" class="h-full w-full object-contain p-3" loading="lazy" decoding="async" />
+                </div>
+              )}
+              <div class="p-4">
+                <h3 class="font-semibold">{p.title}</h3>
+                {p.summary && <p class="text-sm opacity-80 mt-1">{p.summary}</p>}
+              </div>
+            </a>
+          ))}
+        </div>
+        <!-- På XL+: återanvänd originalgridden -->
+        <div class="hidden xl:block">
+          <ProjectsGrid items={featured} />
+        </div>
       </div>
     </div>
 
-    <!-- Höger: sticky lane + osynliga slots (döljs på <xl) -->
+    <!-- HÖGERKOLUMN: animation bara på XL+ och responsiv bredd -->
     <div class="relative hidden xl:block">
       <div id="icon-lane" class="sticky top-16 relative">
         <div id="slot-human" class="opacity-0 pointer-events-none"></div>
         <div id="slot-heart" class="opacity-0 pointer-events-none"></div>
         <div id="slot-dev"   class="opacity-0 pointer-events-none"></div>
 
-        <GsapMorphLottie
-          client:load
-          jsonUrl={animUrl}
-          stateMarkers={["human1","heart1","dev"]}
-          cardSelectors={["#skills-wrap","#heart-wrap","#projects-wrap"]}
-          slotSelectors={["#slot-human","#slot-heart","#slot-dev"]}
-          laneSelector="#icon-lane"
-          sizePx={1080}
-          scale={1.45}
-          initialIndex={0}
-          segmentDurationMs={650}
-          moveDuration={0.5}
-          stateOffsetsPx={[
-            { x: -140, y: -220 },  // human
-            { x: -140, y: -200 },  // heart
-            { x: -140, y: -190 },  // dev
-          ]}
-        />
+  <GsapMorphLottie
+  client:media="(min-width: 1280px)"
+  jsonUrl={animUrl}
+  stateMarkers={["human1","heart1","dev"]}
+  cardSelectors={["#skills-wrap","#heart-wrap","#projects-wrap"]}
+  slotSelectors={["#slot-human","#slot-heart","#slot-dev"]}
+  laneSelector="#icon-lane"
+  sizePx={1080}
+
+  
+  scaleBase={1.95}
+  minScale={1.25}
+  maxScale={2.2}
+
+  
+  offsets={[
+    { x: -80, y: -120 },  // human
+    { x: -80, y: -100 },  // heart
+    { x: -80, y: -105 },  // dev
+  ]}
+/>
       </div>
     </div>
   </section>
