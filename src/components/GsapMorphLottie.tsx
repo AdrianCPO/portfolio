@@ -8,6 +8,7 @@ if (typeof window !== "undefined") {
 }
 
 type XY = { x: number; y: number };
+type StateIdx = 0 | 1 | 2; // 🔹 smal typ
 
 type Props = {
   jsonUrl: string;
@@ -21,7 +22,7 @@ type Props = {
   moveDuration?: number;
   moveEase?: string;
   stateOffsetsPx?: [XY, XY, XY];
-  initialIndex?: 0 | 1 | 2;                      // 🔹 NYTT: vilket state vi ska börja på om man är vid toppen
+  initialIndex?: StateIdx;                       // 🔹 smal typ här också
   debug?: boolean;
   className?: string;
 };
@@ -38,16 +39,18 @@ export default function GsapMorphLottie({
   moveDuration = 0.6,
   moveEase = "power2.out",
   stateOffsetsPx = [{ x: 0, y: 0 }, { x: 0, y: 0 }, { x: 0, y: 0 }],
-  initialIndex = 0,                                // 🔹 default = human
+  initialIndex = 0,
   debug = false,
   className = "",
 }: Props) {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const animRef = useRef<AnimationItem | null>(null);
   const framesRef = useRef<number[]>([]);
-  const currIdxRef = useRef<number>(0);
+  const currIdxRef = useRef<StateIdx>(0);
   const isPlayingRef = useRef(false);
-  const pendingIdxRef = useRef<number | null>(null);
+  const pendingIdxRef = useRef<StateIdx | null>(null);
+
+  const toIdx = (n: number): StateIdx => (n <= 0 ? 0 : n >= 2 ? 2 : 1);
 
   function syncSlotHeights() {
     cardSelectors.forEach((sel, i) => {
@@ -74,7 +77,7 @@ export default function GsapMorphLottie({
     }) as [XY, XY, XY];
   }
 
-  function moveToSlot(index: number, immediate = false) {
+  function moveToSlot(index: StateIdx, immediate = false) {
     const host = hostRef.current;
     if (!host) return;
     const centers = getSlotCentersInLane();
@@ -89,10 +92,11 @@ export default function GsapMorphLottie({
     });
   }
 
-  function morphTo(index: number) {
+  function morphTo(index: StateIdx) {
     const anim = animRef.current;
     const frames = framesRef.current;
     if (!anim) return;
+
     if (isPlayingRef.current) { pendingIdxRef.current = index; return; }
     const from = currIdxRef.current;
     if (from === index) return;
@@ -108,7 +112,7 @@ export default function GsapMorphLottie({
       currIdxRef.current = index;
       isPlayingRef.current = false;
       if (pendingIdxRef.current !== null && pendingIdxRef.current !== currIdxRef.current) {
-        const next = pendingIdxRef.current;
+        const next = pendingIdxRef.current as StateIdx;
         pendingIdxRef.current = null;
         moveToSlot(next, false);
         morphTo(next);
@@ -123,15 +127,13 @@ export default function GsapMorphLottie({
     if (debug) console.log(`[morph] ${from} → ${index} (speed=${speed.toFixed(2)})`);
   }
 
-  function computeActiveIndex(): number {
+  function computeActiveIndex(): StateIdx {
     const rects = cardSelectors.map((sel) => document.querySelector<HTMLElement>(sel)!.getBoundingClientRect());
     const centers = rects.map(r => r.top + r.height / 2);
     const mid01 = (centers[0] + centers[1]) / 2;
     const mid12 = (centers[1] + centers[2]) / 2;
     const vy = window.innerHeight / 2;
-    if (vy < mid01) return 0;
-    if (vy < mid12) return 1;
-    return 2;
+    return vy < mid01 ? 0 : vy < mid12 ? 1 : 2;
   }
 
   // Ladda Lottie & init
@@ -157,7 +159,10 @@ export default function GsapMorphLottie({
 
     const onDomLoaded = () => {
       const md: any = (anim as any).animationData;
-      const byName = new Map((md?.markers ?? []).map((m: any) => [m.cm, m.tm]));
+      // 🔹 Typa kartan korrekt
+      const byName: Map<string, number> = new Map<string, number>(
+        (md?.markers ?? []).map((m: any) => [m.cm as string, Number(m.tm)])
+      );
       framesRef.current = stateMarkers.map((n) => byName.get(n) ?? 0);
 
       host.style.position = "absolute";
@@ -172,19 +177,19 @@ export default function GsapMorphLottie({
 
       syncSlotHeights();
 
-      // 🔹 STARTLOGIK: om vi är nära toppen → börja alltid på initialIndex (human = 0)
       const nearTop = window.scrollY < 150;
-      let init = initialIndex;
+      let init: StateIdx = initialIndex; // 🔹 strikt typ
       if (!nearTop) {
-        // annars välj den slot vars center ligger närmast lane-mitten
         const lr = getLaneRect()!;
         const centers = getSlotCentersInLane();
         const laneMidY = lr.height / 2;
         let best = Infinity;
+        let bestIdx = 0;
         centers.forEach((c, i) => {
           const d = Math.abs(c.y - laneMidY);
-          if (d < best) { best = d; init = i; }
+          if (d < best) { best = d; bestIdx = i; }
         });
+        init = toIdx(bestIdx);
       }
 
       try { anim.goToAndStop(framesRef.current[init] ?? 0, true); } catch {}
@@ -203,7 +208,7 @@ export default function GsapMorphLottie({
     };
   }, [jsonUrl, stateMarkers.join("|"), sizePx, scale, initialIndex]);
 
-  // En enda trigger som uppdaterar aktiv sektion
+  // En trigger som uppdaterar aktiv sektion
   useEffect(() => {
     const first = document.querySelector<HTMLElement>(cardSelectors[0]);
     const last  = document.querySelector<HTMLElement>(cardSelectors[2]);

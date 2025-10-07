@@ -1,3 +1,10 @@
+type Item = {
+  slug: string;
+  title: string;
+  summary?: string;
+  image?: string | null | undefined;
+};
+
 export default function BackgroundCards({
   items,
   className = "",
@@ -10,7 +17,7 @@ export default function BackgroundCards({
       {items.map((it, i) => (
         <a
           key={it.slug}
-          id={`bg-card-${i+1}`}
+          id={`bg-card-${i + 1}`}
           href={`/background/${it.slug}/`}
           className="group block overflow-hidden rounded-xl border bg-white dark:bg-slate-900 transition hover:shadow-md"
         >
@@ -27,7 +34,9 @@ export default function BackgroundCards({
           )}
           <div className="p-4">
             <h3 className="text-lg sm:text-xl font-semibold">{it.title}</h3>
-            {it.summary && <p className="text-sm sm:text-base opacity-80 mt-2">{it.summary}</p>}
+            {it.summary && (
+              <p className="text-sm sm:text-base opacity-80 mt-2">{it.summary}</p>
+            )}
             <span className="mt-3 inline-block text-xs underline opacity-90 group-hover:opacity-100">
               Läs mer →
             </span>
