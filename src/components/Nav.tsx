@@ -39,7 +39,7 @@ export default function Nav() {
 
   return (
     <header className="sticky top-0 z-50 backdrop-blur border-b border-slate-200/50 dark:border-slate-700/50">
-      <nav className="mx-auto max-w-5xl px-4 py-3 flex items-center justify-between">
+      <nav className="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
         <a href={joinBase("./")} className="font-semibold">Adrian</a>
         <div className="flex items-center gap-3">
           {link("projects/", "Projekt")}
