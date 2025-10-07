@@ -5,6 +5,7 @@ import Footer from "../components/Footer.tsx";
 import ProjectsGrid, { type Project } from "../components/ProjectsGrid.tsx";
 import { getCollection, type CollectionEntry } from "astro:content";
 import BackgroundCards from "../components/BackgroundCards.tsx";
+import GsapMorphLottie from "../components/GsapMorphLottie.tsx";
 
 const withBase = (p?: string) => {
   if (!p) return undefined;
@@ -14,6 +15,8 @@ const withBase = (p?: string) => {
   return `${b}/${pp}`;
 };
 
+const animUrl = withBase("lottie/main_animation_new.json")!;
+
 const name = "Adrian";
 const titlePrimary = "Frontendutvecklare";
 const titleSecondary = "Ortopedingenjör";
@@ -21,17 +24,15 @@ const intro = `Jag brinner för att bygga tillgängliga, prestandaoptimerade gr�
 Med över 10 års erfarenhet som ortopedingenjör tar jag med mig ett användarcentrerat,
 analytiskt arbetssätt in i webbutveckling – där funktion möter form.`;
 
-const avatar = withBase("/images/avatar.jpg"); // valfritt
 const location = "Malmö, Sverige";
 const availability = "Öppen för jobb- och frilansuppdrag";
-const email = "adrianjonsson@hotmail.com"; // byt
+const email = "adrianjonsson@hotmail.com";
 const links = [
   { href: "https://github.com/AdrianCPO", label: "GitHub" },
   { href: "https://www.linkedin.com/in/adrian-jönsson-718884330", label: "LinkedIn" },
 ];
 
-// Hämta projekt och ta ut de 3 senaste
-
+// Hämta data
 const bgRaw = await getCollection("backgrounds");
 const bgItems = bgRaw
   .sort((a, b) => (a.data.order ?? 999) - (b.data.order ?? 999) || a.data.title.localeCompare(b.data.title))
@@ -66,34 +67,12 @@ const featured = allProjects.slice(0, 3);
   <!-- HERO -->
   <section class="mx-auto max-w-5xl px-0 py-6 sm:py-10">
     <div class="grid gap-6 sm:grid-cols-[auto,1fr] sm:items-center">
-      {avatar && (
-        <img
-          src={avatar}
-          alt={`Foto på ${name}`}
-          width="120"
-          height="120"
-          class="rounded-full border border-slate-200/60 dark:border-slate-700/60"
-        />
-      )}
       <div>
         <h1 class="text-3xl sm:text-4xl font-bold tracking-tight">{name}</h1>
         <p class="mt-1 text-lg">
           {titlePrimary} · <span class="opacity-80">{titleSecondary}</span>
         </p>
         <p class="mt-4 max-w-2xl leading-relaxed opacity-90">{intro}</p>
-
-        <div class="mt-6 flex flex-wrap gap-3">
-          <a
-            href={withBase("projects/")}
-            class="rounded-xl bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 px-4 py-2 hover:opacity-90"
-            >Se projekt</a
-          >
-          <a
-            href={withBase("contact/")}
-            class="rounded-xl border px-4 py-2 hover:shadow-sm"
-            >Kontakta mig</a
-          >
-        </div>
       </div>
     </div>
 
@@ -114,38 +93,72 @@ const featured = allProjects.slice(0, 3);
         </div>
       </div>
     </div>
+  </section>
 
-    <!-- Skills -->
-    <div class="mt-10">
-      <h2 class="text-xl font-semibold mb-3">Tekniker jag jobbar med</h2>
-      <div class="flex flex-wrap gap-2 text-xs">
-        {["Astro","React","TypeScript","Tailwind","Accessibility","Performance","Vite"].map((t) => (
-          <span class="px-2 py-1 border rounded">{t}</span>
+  <!-- 🔹 HELBREDD: Varför ortopedingenjör → frontend? -->
+<section class="mx-auto max-w-6xl mt-10">
+  <div class="rounded-xl border p-6">
+    <h3 class="font-semibold mb-2 text-lg">Varför ortopedingenjör → frontend?</h3>
+    <p class="opacity-90">
+      I ortopedteknik handlar allt om passform, funktion och att lyssna på användaren.
+      Samma principer guidar mig i UI/UX: empati, noggrann problemlösning och iterativt arbete.
+    </p>
+  </div>
+</section>
+
+<!-- 🔹 2 kolumner: vänster = färdigheter + hjärta + projekt, höger = animation -->
+<section class="mx-auto max-w-6xl mt-10 grid md:grid-cols-[minmax(0,1fr)_380px] gap-10 items-start">
+  <!-- Vänster kolumn -->
+  <div class="space-y-10">
+    <!-- Sektion 1: Färdigheter -->
+    <div id="skills-wrap" class="rounded-xl border p-4 min-h-[420px]">
+      <h2 class="text-lg font-semibold mb-3">Färdigheter</h2>
+      <div class="grid sm:grid-cols-2 gap-2">
+        {bgItems.map((it) => (
+          <div class="flex flex-col items-center justify-center text-center border rounded-lg p-2 hover:shadow-sm transition bg-white dark:bg-slate-900">
+            {it.image && (
+              <div class="h-20 w-full flex items-center justify-center mb-1">
+                <img src={it.image} alt={it.title} class="object-contain h-16" />
+              </div>
+            )}
+            <h3 class="font-medium text-sm">{it.title}</h3>
+            <p class="text-xs opacity-80 mt-1">{it.summary}</p>
+          </div>
         ))}
       </div>
     </div>
 
-    <!-- Bro mellan ortopedteknik & frontend -->
-    <div class="mt-10 rounded-xl border p-4">
-      <h3 class="font-semibold mb-2">Varför ortopedingenjör → frontend?</h3>
-      <p class="opacity-90">
-        I ortopedteknik handlar allt om passform, funktion och att lyssna på användaren.
-        Samma principer guidar mig i UI/UX: empati, noggrann problemlösning och iterativt arbete.
-      </p>
+    <!-- Sektion 2: Hjärt-div -->
+    <div id="heart-wrap" class="rounded-xl border p-4 flex items-center justify-center min-h-[280px] bg-slate-50 dark:bg-slate-800">
+      <p class="text-base opacity-70 italic">Empati & passion – hjärtat i min utveckling ❤️</p>
     </div>
-  </section>
-  <BackgroundCards client:load items={bgItems} inertiaMs={600} scrollStretch={1.8} />
 
-  <!-- Utvalda projekt -->
-  {featured.length ? (
-    <section class="mx-auto max-w-5xl mt-4">
+    <!-- Sektion 3: Projekt -->
+    <div id="projects-wrap" class="rounded-xl border p-4 min-h-[420px]">
       <div class="flex items-baseline justify-between mb-3">
-        <h2 class="text-xl font-semibold">Utvalda projekt</h2>
-        <a class="text-sm underline" href={withBase("projects/")}>Visa alla</a>
+        <h2 class="text-lg font-semibold">Utvalda projekt</h2>
+        <a class="text-xs underline" href={withBase("projects/")}>Visa alla</a>
       </div>
       <ProjectsGrid items={featured} />
-    </section>
-  ) : null}
+    </div>
+  </div>
+
+  <!-- Höger kolumn: animation (human → heart → developer) -->
+  <div class="relative hidden md:block">
+    <GsapMorphLottie
+      client:load
+      jsonUrl={animUrl}
+      stateMarkers={["human1", "heart1", "dev"]}
+      cardSelectors={["#skills-wrap", "#heart-wrap", "#projects-wrap"]}
+      sizePx={1600}     
+      gapX={250}        
+      yAnchor={0.5}
+      perStopYOffsetPx={[-20, 0, +16]}
+      segmentDurationMs={1200}
+    />
+  </div>
+</section>
+
 
   <!-- Sociala länkar -->
   {links.length ? (
