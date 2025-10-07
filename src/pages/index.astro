@@ -16,7 +16,7 @@ const withBase = (p?: string) => {
 
 const animUrl = withBase("lottie/main_animation_new.json")!;
 
-const name = "Adrian";
+const name = "Adrian Jönsson";
 const titlePrimary = "Frontendutvecklare";
 const titleSecondary = "Ortopedingenjör";
 const intro = `Jag brinner för att bygga tillgängliga, prestandaoptimerade gränssnitt.
@@ -104,7 +104,7 @@ const featured = allProjects.slice(0, 3);
   <section class="mx-auto max-w-6xl mt-10 grid md:grid-cols-[minmax(0,1fr)_420px] gap-10 items-start">
     <div class="space-y-10">
       <div id="skills-wrap" class="rounded-xl border p-4 min-h-[420px]">
-        <h2 class="text-lg font-semibold mb-3">Färdigheter</h2>
+        <h2 class="text-lg font-semibold mb-3">Färdigheter som ortopedingenjör</h2>
         <div class="grid sm:grid-cols-2 gap-2">
           {bgItems.map((it) => (
             <div class="flex flex-col items-center justify-center text-center border rounded-lg p-2 hover:shadow-sm transition bg-white dark:bg-slate-900">
@@ -126,7 +126,7 @@ const featured = allProjects.slice(0, 3);
 
       <div id="projects-wrap" class="rounded-xl border p-4 min-h-[420px]">
         <div class="flex items-baseline justify-between mb-3">
-          <h2 class="text-lg font-semibold">Utvalda projekt</h2>
+          <h2 class="text-lg font-semibold">Utvalda projekt som utvecklare</h2>
           <a class="text-xs underline" href={withBase("projects/")}>Visa alla</a>
         </div>
         <ProjectsGrid items={featured} />
