@@ -1,0 +1,40 @@
+--- 
+import Base from "../../layouts/Base.astro";
+import Nav from "../../components/Nav.tsx";
+import Footer from "../../components/Footer.tsx";
+import BackgroundCards from "../../components/BackgroundCards.tsx";
+import { getCollection, type CollectionEntry } from "astro:content";
+
+const withBase = (p?: string) => {
+  if (!p) return undefined;
+  const base = import.meta.env.BASE_URL || "/";
+  const b = base.endsWith("/") ? base.slice(0, -1) : base;
+  const pp = p.startsWith("/") ? p.slice(1) : p;
+  return `${b}/${pp}`;
+};
+
+type BgEntry = CollectionEntry<"backgrounds">;
+type BgItem = { slug: string; title: string; summary?: string; image?: string | undefined };
+
+const raw = await getCollection("backgrounds");
+const items: BgItem[] = raw
+  .sort((a: BgEntry, b: BgEntry) =>
+    (a.data.order ?? 999) - (b.data.order ?? 999) || a.data.title.localeCompare(b.data.title)
+  )
+  .map((p: BgEntry) => ({
+    slug: p.slug,
+    title: p.data.title,
+    summary: p.data.summary,
+    image: withBase(p.data.image),
+  }));
+---
+
+<Base title="CPO – Kompetenser">
+  <Fragment slot="header"><Nav client:load /></Fragment>
+
+  <h1 class="text-2xl font-bold mb-4">CPO – Färdigheter & bakgrund</h1>
+  <!-- BackgroundCards sätter id="bg-card-1..N" per kort – matchar länkarna från startsidan -->
+  <BackgroundCards items={items} />
+
+  <Fragment slot="footer"><Footer /></Fragment>
+</Base>

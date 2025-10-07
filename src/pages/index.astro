@@ -6,6 +6,13 @@ import ProjectsGrid, { type Project } from "../components/ProjectsGrid.tsx";
 import { getCollection, type CollectionEntry } from "astro:content";
 import GsapMorphLottie from "../components/GsapMorphLottie.tsx";
 
+// Hjälptyper för att undvika implicit-any i .astro-frontmatter
+type BgEntry = CollectionEntry<"backgrounds">;
+type ProjEntry = CollectionEntry<"projects">;
+type BgItem = { slug: string; title: string; summary?: string; image?: string | undefined };
+type Link = { href: string; label: string };
+
+// Säker join av BASE_URL + path
 const withBase = (p?: string) => {
   if (!p) return undefined;
   const base = import.meta.env.BASE_URL || "/";
@@ -26,25 +33,31 @@ analytiskt arbetssätt in i webbutveckling – där funktion möter form.`;
 const location = "Malmö, Sverige";
 const availability = "Öppen för jobb- och frilansuppdrag";
 const email = "adrianjonsson@hotmail.com";
-const links = [
+const links: Link[] = [
   { href: "https://github.com/AdrianCPO", label: "GitHub" },
   { href: "https://www.linkedin.com/in/adrian-jönsson-718884330", label: "LinkedIn" },
 ];
 
+// Hämta och förbered "backgrounds" (för korten under Färdigheter…)
 const bgRaw = await getCollection("backgrounds");
-const bgItems = bgRaw
-  .sort((a, b) => (a.data.order ?? 999) - (b.data.order ?? 999) || a.data.title.localeCompare(b.data.title))
+const bgItems: BgItem[] = bgRaw
+  .sort(
+    (a: BgEntry, b: BgEntry) =>
+      (a.data.order ?? 999) - (b.data.order ?? 999) ||
+      a.data.title.localeCompare(b.data.title)
+  )
   .slice(0, 3)
-  .map((p: CollectionEntry<"backgrounds">) => ({
+  .map((p: BgEntry) => ({
     slug: p.slug,
     title: p.data.title,
     summary: p.data.summary,
     image: withBase(p.data.image),
   }));
 
+// Hämta och förbered projekt (MD-case)
 const raw = await getCollection("projects");
 const allProjects: Project[] = raw
-  .map((p: CollectionEntry<"projects">) => ({
+  .map((p: ProjEntry): Project => ({
     slug: p.id.split("/").pop()?.replace(/\.(md|mdx)$/, "") ?? p.id,
     title: p.data.title,
     summary: p.data.summary,
@@ -54,7 +67,7 @@ const allProjects: Project[] = raw
     demo: p.data.demo,
     date: p.data.date ?? null,
   }))
-  .sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""));
+  .sort((a: Project, b: Project) => (b.date ?? "").localeCompare(a.date ?? ""));
 
 const featured = allProjects.slice(0, 3);
 ---
@@ -103,11 +116,15 @@ const featured = allProjects.slice(0, 3);
 
   <section class="mx-auto max-w-6xl mt-10 grid md:grid-cols-[minmax(0,1fr)_420px] gap-10 items-start">
     <div class="space-y-10">
+      <!-- Färdigheter – nu klickbara till /cpo/#bg-card-X -->
       <div id="skills-wrap" class="rounded-xl border p-4 min-h-[420px]">
         <h2 class="text-lg font-semibold mb-3">Färdigheter som ortopedingenjör</h2>
         <div class="grid sm:grid-cols-2 gap-2">
-          {bgItems.map((it) => (
-            <div class="flex flex-col items-center justify-center text-center border rounded-lg p-2 hover:shadow-sm transition bg-white dark:bg-slate-900">
+          {bgItems.map((it: BgItem, i: number) => (
+            <a
+              href={withBase(`cpo/#bg-card-${i + 1}`)}
+              class="flex flex-col items-center justify-center text-center border rounded-lg p-2 hover:shadow-sm transition bg-white dark:bg-slate-900"
+            >
               {it.image && (
                 <div class="h-20 w-full flex items-center justify-center mb-1">
                   <img src={it.image} alt={it.title} class="object-contain h-16" />
@@ -115,7 +132,7 @@ const featured = allProjects.slice(0, 3);
               )}
               <h3 class="font-medium text-sm">{it.title}</h3>
               <p class="text-xs opacity-80 mt-1">{it.summary}</p>
-            </div>
+            </a>
           ))}
         </div>
       </div>
@@ -134,42 +151,40 @@ const featured = allProjects.slice(0, 3);
     </div>
 
     <!-- Höger: sticky lane + osynliga slots (döljs på <xl) -->
-  <div class="relative hidden xl:block">
-  <!-- lyft lane lite: top-16 -->
-  <div id="icon-lane" class="sticky top-16 relative">
-    <!-- slots – höjd synkas via komponenten -->
-    <div id="slot-human" class="opacity-0 pointer-events-none"></div>
-    <div id="slot-heart" class="opacity-0 pointer-events-none"></div>
-    <div id="slot-dev"   class="opacity-0 pointer-events-none"></div>
+    <div class="relative hidden xl:block">
+      <!-- lyft lane lite: top-16 -->
+      <div id="icon-lane" class="sticky top-16 relative">
+        <!-- slots – höjd synkas via komponenten -->
+        <div id="slot-human" class="opacity-0 pointer-events-none"></div>
+        <div id="slot-heart" class="opacity-0 pointer-events-none"></div>
+        <div id="slot-dev"   class="opacity-0 pointer-events-none"></div>
 
-       <GsapMorphLottie
-      client:load
-      jsonUrl={animUrl}
-      stateMarkers={["human1","heart1","dev"]}
-      cardSelectors={["#skills-wrap","#heart-wrap","#projects-wrap"]}
-      slotSelectors={["#slot-human","#slot-heart","#slot-dev"]}
-      laneSelector="#icon-lane"
-      sizePx={1080}
-      scale={1.45}
-      initialIndex={0}
-      segmentDurationMs={650}
-      moveDuration={0.5}
-
-    
-      stateOffsetsPx={[
-        { x: -140, y: -220 },  // human
-        { x: -140, y: -200 },  // heart
-        { x: -140, y: -190 },  // dev
-      ]}
-    />
-  </div>
-</div>
+        <GsapMorphLottie
+          client:load
+          jsonUrl={animUrl}
+          stateMarkers={["human1","heart1","dev"]}
+          cardSelectors={["#skills-wrap","#heart-wrap","#projects-wrap"]}
+          slotSelectors={["#slot-human","#slot-heart","#slot-dev"]}
+          laneSelector="#icon-lane"
+          sizePx={1080}
+          scale={1.45}
+          initialIndex={0}
+          segmentDurationMs={650}
+          moveDuration={0.5}
+          stateOffsetsPx={[
+            { x: -140, y: -220 },  // human
+            { x: -140, y: -200 },  // heart
+            { x: -140, y: -190 },  // dev
+          ]}
+        />
+      </div>
+    </div>
   </section>
 
   {links.length ? (
     <section class="mx-auto max-w-5xl mt-8">
       <ul class="flex flex-wrap gap-4 text-sm">
-        {links.map((l) => (
+        {links.map((l: Link) => (
           <li><a class="underline" href={l.href} target="_blank" rel="noopener">{l.label}</a></li>
         ))}
       </ul>

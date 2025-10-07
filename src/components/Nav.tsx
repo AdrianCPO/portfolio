@@ -43,6 +43,7 @@ export default function Nav() {
         <a href={joinBase("./")} className="font-semibold">Adrian</a>
         <div className="flex items-center gap-3">
           {link("projects/", "Projekt")}
+          {link("cpo/", "CPO")} {/* ← NY */}
           {link("contact/", "Kontakt")}
           <ThemeToggle />
         </div>
