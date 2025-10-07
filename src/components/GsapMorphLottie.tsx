@@ -7,170 +7,131 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
+type XY = { x: number; y: number };
+
 type Props = {
-  /** Lottie JSON-URL (måste innehålla markers som matchar stateMarkers) */
   jsonUrl: string;
-
-  /** Marker-namn i den ordning vi vill stanna (t.ex. ["human1","heart1","dev"]) */
-  stateMarkers: string[];
-
-  /** Selektorer för varje “stopp” i samma ordning som stateMarkers */
-  cardSelectors: string[];
-
-  /** Storlek på ikonen (px) – kvadrat */
-  sizePx?: number; // default 220
-
-  /** Horisontellt avstånd från stoppets kant till ikonens center (px).
-      Antingen ett tal (gäller alla) eller en array per stopp. */
-  gapX?: number | number[]; // default 32
-
-  /** Vertikal ankarpunkt i stoppet (0=top, 0.5=mitt, 1=botten) */
-  yAnchor?: number; // default 0.5
-
-  /** Per-stopp finjustering i Y-led (px), t.ex. [ -8, 0, +6 ] */
-  perStopYOffsetPx?: number[];
-
-  /** Hur snabbt ikonen flyttar sig mellan stoppen (sek) */
-  moveDuration?: number; // default 0.7
-
-  /** Easing för flytten */
-  moveEase?: string; // default "power2.out"
-
-  /** Morph-tid per steg (ms) – vi spelar marker→marker med denna tidskänsla */
-  segmentDurationMs?: number; // default 900
-
-  /** Debug-loggar i konsolen */
+  stateMarkers: [string, string, string];        // ["human","heart","dev"]
+  cardSelectors: [string, string, string];       // vänster: skills, heart, projects
+  slotSelectors: [string, string, string];       // höger: human-slot, heart-slot, dev-slot
+  laneSelector: string;                          // sticky container i högerkolumn
+  sizePx?: number;                               // Lottie viewbox-storlek (din AE=1080)
+  scale?: number;                                // visuell skala utan att påverka koordinater
+  segmentDurationMs?: number;
+  moveDuration?: number;
+  moveEase?: string;
+  stateOffsetsPx?: [XY, XY, XY];                 // kompensation per state
   debug?: boolean;
-
-  /** Extra wrapper-klasser (t.ex. färg via text-current) */
   className?: string;
 };
-
-const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
 
 export default function GsapMorphLottie({
   jsonUrl,
   stateMarkers,
   cardSelectors,
-  sizePx = 220,
-  gapX = 32,
-  yAnchor = 0.5,
-  perStopYOffsetPx = [],
-  moveDuration = 0.7,
-  moveEase = "power2.out",
+  slotSelectors,
+  laneSelector,
+  sizePx = 1080,
+  scale = 1,
   segmentDurationMs = 900,
+  moveDuration = 0.6,
+  moveEase = "power2.out",
+  stateOffsetsPx = [{ x: 0, y: 0 }, { x: 0, y: 0 }, { x: 0, y: 0 }],
   debug = false,
   className = "",
 }: Props) {
-  const hostRef = useRef<HTMLDivElement | null>(null); // overlay-ikon (position: fixed)
-  const animRef = useRef<AnimationItem | null>(null); // Lottie instance
-  const markerFramesRef = useRef<number[]>([]); // frames per marker
-  const currIdxRef = useRef<number>(0); // nuvarande state-index
-  const completeHandlerRef = useRef<((...a: any[]) => void) | null>(null);
-  const playingRef = useRef(false);
+  const hostRef = useRef<HTMLDivElement | null>(null);
+  const animRef = useRef<AnimationItem | null>(null);
+  const framesRef = useRef<number[]>([]);
+  const currIdxRef = useRef<number>(0);
 
-  // === Hjälpare: hämta stoppens "ankarpunkter" (x,y) ===
-  function computeTargets(): Array<{ x: number; y: number; side: "left" | "right" }> {
-    const vw = window.innerWidth;
-    const cx = vw / 2;
-    const out: Array<{ x: number; y: number; side: "left" | "right" }> = [];
-
-    const gaps = Array.isArray(gapX) ? gapX : cardSelectors.map(() => gapX);
-
+  /* === 1) Mät vänstersektioner och kopiera höjden till slotarna === */
+  function syncSlotHeights() {
     cardSelectors.forEach((sel, i) => {
+      const left = document.querySelector<HTMLElement>(sel);
+      const slot = document.querySelector<HTMLElement>(slotSelectors[i]);
+      if (!left || !slot) return;
+      const h = left.getBoundingClientRect().height;
+      slot.style.height = `${Math.max(160, Math.round(h))}px`;
+    });
+  }
+
+  /* === 2) Hämta slot-centers i lane-koordinater (inte viewport) === */
+  function getSlotCentersInLane(): [XY, XY, XY] {
+    const lane = document.querySelector<HTMLElement>(laneSelector);
+    if (!lane) return [{ x: 0, y: 0 }, { x: 0, y: 0 }, { x: 0, y: 0 }] as any;
+    const lr = lane.getBoundingClientRect();
+
+    const centers = slotSelectors.map((sel) => {
       const el = document.querySelector<HTMLElement>(sel);
-      if (!el) {
-        out.push({ x: cx, y: window.innerHeight / 2, side: "left" });
-        return;
-      }
-
+      if (!el) return { x: lr.width / 2, y: lr.height / 2 };
       const r = el.getBoundingClientRect();
-      const midX = r.left + r.width / 2;
-      const midY = r.top + r.height * clamp01(yAnchor);
-      const side = midX < cx ? "leftCol" : "rightCol";
+      // koordinater RELATIVT lane:
+      return {
+        x: (r.left - lr.left) + r.width / 2,
+        y: (r.top - lr.top) + r.height / 2,
+      };
+    }) as [XY, XY, XY];
 
-      const gx = typeof gaps[i] === "number" ? (gaps[i] as number) : 32;
-      const perY = perStopYOffsetPx[i] ?? 0;
-
-      // Ikonens center placeras en bit utanför stoppets kant
-      const x = side === "leftCol" ? r.right + gx : r.left - gx;
-      const y = midY + perY;
-
-      out.push({ x, y, side: side === "leftCol" ? "right" : "left" });
-    });
-
-    return out;
+    return centers;
   }
 
-  // === Hitta stoppet närmast viewportens mitt (för bättre init) ===
-  function getClosestStopIndex() {
-    const targets = computeTargets();
-    const vy = window.innerHeight * 0.5; // viewport-mitt
-    let best = 0;
-    let bestDist = Number.POSITIVE_INFINITY;
-    targets.forEach((t, i) => {
-      const d = Math.abs(t.y - vy);
-      if (d < bestDist) {
-        best = i;
-        bestDist = d;
-      }
+  /* === 3) Flytt till viss slot (absolut i lane) === */
+  function moveToSlot(index: number, immediate = false) {
+    const host = hostRef.current;
+    const lane = document.querySelector<HTMLElement>(laneSelector);
+    if (!host || !lane) return;
+    const centers = getSlotCentersInLane();
+    const c = centers[index] ?? centers[centers.length - 1];
+    const off = stateOffsetsPx[index] ?? { x: 0, y: 0 };
+
+    gsap.to(host, {
+      x: Math.round(c.x - sizePx / 2 + off.x),
+      y: Math.round(c.y - sizePx / 2 + off.y),
+      duration: immediate ? 0 : moveDuration,
+      ease: moveEase,
+      overwrite: true,
     });
-    return best;
   }
 
-  // === Spela marker→marker (utan AE-positioner) ===
-  function playBetweenMarkers(fromIndex: number, toIndex: number) {
+  /* === 4) Spela mellan markers === */
+  function playTo(index: number) {
     const anim = animRef.current;
-    const frames = markerFramesRef.current;
-    if (!anim || frames.length < 2) return;
+    const frames = framesRef.current;
+    if (!anim) return;
+    const from = currIdxRef.current;
+    if (from === index) return;
 
-    const start = frames[fromIndex];
-    const end = frames[toIndex];
-    if (typeof start !== "number" || typeof end !== "number") return;
-
+    const start = frames[from] ?? 0;
+    const end = frames[index] ?? 0;
     const fr = (anim as any).frameRate ?? (anim as any).animationData?.fr ?? 60;
     const dist = Math.abs(end - start);
     const naturalMs = (dist / fr) * 1000;
     const speed = naturalMs > 0 ? naturalMs / (segmentDurationMs || 900) : 1;
 
-    // Rensa ev. tidigare complete-handler
-    if (completeHandlerRef.current) {
-      anim.removeEventListener("complete", completeHandlerRef.current as any);
-      completeHandlerRef.current = null;
-    }
+    const onDone = () => {
+      currIdxRef.current = index;
+      anim.removeEventListener("complete", onDone as any);
+      if (debug) console.log("[Lottie] state =", index);
+    };
 
-    playingRef.current = true;
-
-    const handleComplete = () => {
-     currIdxRef.current = toIndex;
-        playingRef.current = false;
-        anim.removeEventListener("complete", handleComplete as any);
-        completeHandlerRef.current = null;
-     if (debug) console.log("[Lottie] Reached state", toIndex);
-};  
-
-    completeHandlerRef.current = handleComplete;
-
-    anim.setSpeed(speed);
+    anim.removeEventListener("complete", onDone as any);
     anim.setDirection(end >= start ? 1 : -1);
-    anim.addEventListener("complete", handleComplete as any);
+    anim.setSpeed(speed);
+    anim.addEventListener("complete", onDone as any);
     anim.playSegments([start, end], true);
-
-    if (debug) console.log("[Lottie] Play", fromIndex, "→", toIndex, "(frames:", start, "→", end, ", speed:", speed, ")");
   }
 
-  // === Ladda Lottie & markers ===
+  /* === 5) Ladda Lottie och init i närmaste slot (i lane-koordinater) === */
   useEffect(() => {
     const host = hostRef.current;
-    if (!host) return;
+    const lane = document.querySelector<HTMLElement>(laneSelector);
+    if (!host || !lane) return;
 
-    if (animRef.current) {
-      animRef.current.destroy();
-      animRef.current = null;
-    }
+    if (animRef.current) animRef.current.destroy();
 
     const anim = lottie.loadAnimation({
-      container: host, // vi ritar direkt i overlayn
+      container: host,
       renderer: "svg",
       loop: false,
       autoplay: false,
@@ -183,32 +144,37 @@ export default function GsapMorphLottie({
     });
 
     const onDomLoaded = () => {
-      // Läs Bodymovin-markers
       const md: any = (anim as any).animationData;
-      const allMarkers: Array<{ tm: number; cm: string }> = md?.markers ?? [];
-      const byName = new Map(allMarkers.map((m) => [m.cm, m.tm]));
+      const byName = new Map((md?.markers ?? []).map((m: any) => [m.cm, m.tm]));
+      framesRef.current = stateMarkers.map((n) => byName.get(n) ?? 0);
 
-      const frames = stateMarkers.map((name) => {
-        const f = byName.get(name);
-        if (typeof f !== "number") {
-          console.warn(`[GsapMorphLottie] Marker saknas: "${name}"`);
-          return 0;
-        }
-        return f;
+      // host är absolut i lane
+      host.style.position = "absolute";
+      host.style.left = "0";
+      host.style.top = "0";
+      host.style.width = `${sizePx}px`;
+      host.style.height = `${sizePx}px`;
+      host.style.transformOrigin = "top left";
+
+      // visuell skala
+      host.style.transform = `translate(0px,0px) scale(${scale})`;
+
+      syncSlotHeights();
+
+      // init: välj den slot vars center ligger närmast lane-mitten
+      const centers = getSlotCentersInLane();
+      const laneRect = lane.getBoundingClientRect();
+      const laneMidY = laneRect.height / 2;
+      let init = 0;
+      let best = Infinity;
+      centers.forEach((c, i) => {
+        const d = Math.abs(c.y - laneMidY);
+        if (d < best) { best = d; init = i; }
       });
-      markerFramesRef.current = frames;
 
-      // ✅ NYTT: initiera på närmaste stopp i nuvarande vy
-      const initial = getClosestStopIndex();
-      currIdxRef.current = initial;
-      const f0 = frames[initial] ?? 0;
-      try {
-        anim.goToAndStop(f0, true);
-      } catch {}
-
-      if (debug) {
-        console.log("[Lottie] markers:", stateMarkers, "frames:", frames, "init index:", initial, "frame:", f0);
-      }
+      try { anim.goToAndStop(framesRef.current[init] ?? 0, true); } catch {}
+      currIdxRef.current = init;
+      moveToSlot(init, true);
     };
 
     anim.addEventListener("DOMLoaded", onDomLoaded);
@@ -219,103 +185,74 @@ export default function GsapMorphLottie({
       anim.destroy();
       animRef.current = null;
     };
-  }, [jsonUrl, stateMarkers.join("|"), debug]);
+  }, [jsonUrl, stateMarkers.join("|"), sizePx, scale]);
 
-  // === Flytta ikonen mellan stoppen med ScrollTrigger (triggers = stoppen) ===
+  /* === 6) ScrollTriggers – “trösklar” som hos Konovalenko === */
   useEffect(() => {
-    const host = hostRef.current;
-    if (!host) return;
-
-    // Init overlay-storlek & pointer-events
-    gsap.set(host, {
-      position: "fixed",
-      left: 0,
-      top: 0,
-      width: sizePx,
-      height: sizePx,
-      x: 0,
-      y: 0,
-      pointerEvents: "none",
-    });
-
-    const moveTo = (i: number, immediate = false) => {
-      const targets = computeTargets();
-      const t = targets[i] ?? targets[targets.length - 1];
-      if (!t) return;
-      const x = Math.round(t.x - sizePx / 2);
-      const y = Math.round(t.y - sizePx / 2);
-      gsap.to(host, {
-        x,
-        y,
-        duration: immediate ? 0 : moveDuration,
-        ease: moveEase,
-        overwrite: true,
-      });
-    };
-
-    // ✅ NYTT: placera overlay vid närmaste stopp direkt
-    const initIdx = getClosestStopIndex();
-    moveTo(initIdx, true);
-
-    // Skapa triggers per stopp – onEnter (scroll ned) / onEnterBack (scroll upp)
     const triggers: ScrollTrigger[] = [];
 
-    cardSelectors.forEach((sel, i) => {
+    const createRange = (sel: string, onEnter: () => void, onEnterBack: () => void, onLeave?: (dir: 1 | -1) => void) => {
       const el = document.querySelector<HTMLElement>(sel);
       if (!el) return;
-
       const st = ScrollTrigger.create({
         trigger: el,
-        start: "top center+=10%",
-        end: "bottom center-=10%",
-        onEnter: () => {
-          moveTo(i);
-          const from = currIdxRef.current;
-          if (from !== i) playBetweenMarkers(from, i);
-        },
-        onEnterBack: () => {
-          moveTo(i);
-          const from = currIdxRef.current;
-          if (from !== i) playBetweenMarkers(from, i);
-        },
+        start: "top center+=10%",     // tröskel in
+        end:   "bottom center-=10%",  // tröskel ut
+        onEnter: () => onEnter(),
+        onEnterBack: () => onEnterBack(),
+        onLeave: (self) => onLeave?.(self.direction as 1 | -1),
       });
       triggers.push(st);
-    });
+    };
 
-    // Uppdatera positioner på resize/refresh
-    const onRefresh = () => {
+    // 0) Skills ⇒ Human
+    createRange(
+      cardSelectors[0],
+      () => { moveToSlot(0); playTo(0); },
+      () => { moveToSlot(0); playTo(0); }
+    );
+
+    // 1) Heart ⇒ Heart när inne; lämnar upp/ned ⇒ Human/Dev
+    createRange(
+      cardSelectors[1],
+      () => { moveToSlot(1); playTo(1); },
+      () => { moveToSlot(1); playTo(1); },
+      (dir) => {
+        if (dir === 1) { moveToSlot(2); playTo(2); }   // lämnar nedåt ⇒ Dev
+        else           { moveToSlot(0); playTo(0); }   // lämnar uppåt ⇒ Human
+      }
+    );
+
+    // 2) Projects ⇒ Dev
+    createRange(
+      cardSelectors[2],
+      () => { moveToSlot(2); playTo(2); },
+      () => { moveToSlot(2); playTo(2); }
+    );
+
+    const refresh = () => {
+      syncSlotHeights();
+      moveToSlot(currIdxRef.current, true);
       ScrollTrigger.refresh();
-      const closest = getClosestStopIndex();
-      currIdxRef.current = closest;
-      moveTo(closest, true);
     };
-    window.addEventListener("resize", onRefresh, { passive: true });
 
-    // Vänta in sena bilder/layouter
-    const t = setTimeout(onRefresh, 300);
-
-    // ✅ NYTT: nudge även när hela sidan är klar
-    const onLoad = () => {
-      const closest = getClosestStopIndex();
-      currIdxRef.current = closest;
-      moveTo(closest, true);
-    };
-    window.addEventListener("load", onLoad, { once: true });
+    window.addEventListener("resize", refresh, { passive: true });
+    const t = setTimeout(refresh, 250);
+    window.addEventListener("load", refresh, { once: true });
 
     return () => {
       clearTimeout(t);
-      window.removeEventListener("resize", onRefresh as any);
-      window.removeEventListener("load", onLoad as any);
+      window.removeEventListener("resize", refresh as any);
       triggers.forEach((tr) => tr.kill());
     };
   }, [
     cardSelectors.join("|"),
+    slotSelectors.join("|"),
+    laneSelector,
     sizePx,
     moveDuration,
     moveEase,
-    gapX,
-    yAnchor,
-    perStopYOffsetPx.join("|"),
+    stateOffsetsPx.map(o => `${o.x},${o.y}`).join("|"),
   ]);
 
   return (

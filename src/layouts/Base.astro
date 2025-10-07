@@ -7,8 +7,7 @@ import "../styles/global.css";
   <!-- ... -->
   <meta name="color-scheme" content="light dark" />
   <meta charset="utf-8" />
-  
-  <script is:inline>
+    <script is:inline>
     (() => {
       const saved = localStorage.getItem("theme");
       const system = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";

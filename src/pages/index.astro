@@ -4,7 +4,6 @@ import Nav from "../components/Nav.tsx";
 import Footer from "../components/Footer.tsx";
 import ProjectsGrid, { type Project } from "../components/ProjectsGrid.tsx";
 import { getCollection, type CollectionEntry } from "astro:content";
-import BackgroundCards from "../components/BackgroundCards.tsx";
 import GsapMorphLottie from "../components/GsapMorphLottie.tsx";
 
 const withBase = (p?: string) => {
@@ -64,7 +63,7 @@ const featured = allProjects.slice(0, 3);
 <Base title={`${name} – Profil`}>
   <Fragment slot="header"><Nav client:load /></Fragment>
 
-  <!-- HERO -->
+  <!-- HERO (ikonen får aldrig in i den här zonen) -->
   <section class="mx-auto max-w-5xl px-0 py-6 sm:py-10">
     <div class="grid gap-6 sm:grid-cols-[auto,1fr] sm:items-center">
       <div>
@@ -76,7 +75,6 @@ const featured = allProjects.slice(0, 3);
       </div>
     </div>
 
-    <!-- Snabbfakta -->
     <div class="mt-8 grid gap-3 sm:grid-cols-3 text-sm">
       <div class="rounded-lg border p-3">
         <div class="font-semibold">Plats</div>
@@ -95,72 +93,79 @@ const featured = allProjects.slice(0, 3);
     </div>
   </section>
 
-  <!-- 🔹 HELBREDD: Varför ortopedingenjör → frontend? -->
-<section class="mx-auto max-w-6xl mt-10">
-  <div class="rounded-xl border p-6">
-    <h3 class="font-semibold mb-2 text-lg">Varför ortopedingenjör → frontend?</h3>
-    <p class="opacity-90">
-      I ortopedteknik handlar allt om passform, funktion och att lyssna på användaren.
-      Samma principer guidar mig i UI/UX: empati, noggrann problemlösning och iterativt arbete.
-    </p>
-  </div>
-</section>
+  <!-- Varför-sektion -->
+  <section class="mx-auto max-w-6xl mt-10">
+    <div class="rounded-xl border p-6">
+      <h3 class="font-semibold mb-2 text-lg">Varför ortopedingenjör → frontend?</h3>
+      <p class="opacity-90">
+        I ortopedteknik handlar allt om passform, funktion och att lyssna på användaren.
+        Samma principer guidar mig i UI/UX: empati, noggrann problemlösning och iterativt arbete.
+      </p>
+    </div>
+  </section>
 
-<!-- 🔹 2 kolumner: vänster = färdigheter + hjärta + projekt, höger = animation -->
-<section class="mx-auto max-w-6xl mt-10 grid md:grid-cols-[minmax(0,1fr)_380px] gap-10 items-start">
-  <!-- Vänster kolumn -->
-  <div class="space-y-10">
-    <!-- Sektion 1: Färdigheter -->
-    <div id="skills-wrap" class="rounded-xl border p-4 min-h-[420px]">
-      <h2 class="text-lg font-semibold mb-3">Färdigheter</h2>
-      <div class="grid sm:grid-cols-2 gap-2">
-        {bgItems.map((it) => (
-          <div class="flex flex-col items-center justify-center text-center border rounded-lg p-2 hover:shadow-sm transition bg-white dark:bg-slate-900">
-            {it.image && (
-              <div class="h-20 w-full flex items-center justify-center mb-1">
-                <img src={it.image} alt={it.title} class="object-contain h-16" />
-              </div>
-            )}
-            <h3 class="font-medium text-sm">{it.title}</h3>
-            <p class="text-xs opacity-80 mt-1">{it.summary}</p>
-          </div>
-        ))}
+  <!-- 2 kolumner -->
+  <section class="mx-auto max-w-6xl mt-10 grid md:grid-cols-[minmax(0,1fr)_420px] gap-10 items-start">
+    <!-- Vänster: triggers -->
+    <div class="space-y-10">
+      <div id="skills-wrap" class="rounded-xl border p-4 min-h-[420px]">
+        <h2 class="text-lg font-semibold mb-3">Färdigheter</h2>
+        <div class="grid sm:grid-cols-2 gap-2">
+          {bgItems.map((it) => (
+            <div class="flex flex-col items-center justify-center text-center border rounded-lg p-2 hover:shadow-sm transition bg-white dark:bg-slate-900">
+              {it.image && (
+                <div class="h-20 w-full flex items-center justify-center mb-1">
+                  <img src={it.image} alt={it.title} class="object-contain h-16" />
+                </div>
+              )}
+              <h3 class="font-medium text-sm">{it.title}</h3>
+              <p class="text-xs opacity-80 mt-1">{it.summary}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div id="heart-wrap" class="rounded-xl border p-4 flex items-center justify-center min-h-[280px] bg-slate-50 dark:bg-slate-800">
+        <p class="text-base opacity-70 italic">Empati & passion – hjärtat i min utveckling ❤️</p>
+      </div>
+
+      <div id="projects-wrap" class="rounded-xl border p-4 min-h-[420px]">
+        <div class="flex items-baseline justify-between mb-3">
+          <h2 class="text-lg font-semibold">Utvalda projekt</h2>
+          <a class="text-xs underline" href={withBase("projects/")}>Visa alla</a>
+        </div>
+        <ProjectsGrid items={featured} />
       </div>
     </div>
 
-    <!-- Sektion 2: Hjärt-div -->
-    <div id="heart-wrap" class="rounded-xl border p-4 flex items-center justify-center min-h-[280px] bg-slate-50 dark:bg-slate-800">
-      <p class="text-base opacity-70 italic">Empati & passion – hjärtat i min utveckling ❤️</p>
-    </div>
+    <!-- Höger: sticky lane + osynliga slots (döljs på <xl) -->
+    <div class="relative hidden xl:block">
+      <!-- Sticky lane: position:sticky + relative så att ikonen positioneras 100% inuti kolumnen -->
+      <div id="icon-lane" class="sticky top-24 relative">
+        <!-- Osynliga slots – höjd matchas med vänster via JS -->
+        <div id="slot-human" class="opacity-0 pointer-events-none select-none"></div>
+        <div id="slot-heart" class="opacity-0 pointer-events-none select-none"></div>
+        <div id="slot-dev"   class="opacity-0 pointer-events-none select-none"></div>
 
-    <!-- Sektion 3: Projekt -->
-    <div id="projects-wrap" class="rounded-xl border p-4 min-h-[420px]">
-      <div class="flex items-baseline justify-between mb-3">
-        <h2 class="text-lg font-semibold">Utvalda projekt</h2>
-        <a class="text-xs underline" href={withBase("projects/")}>Visa alla</a>
+        <!-- Ikon (absolut i lane) -->
+        <GsapMorphLottie
+          client:load
+          jsonUrl={animUrl}
+          stateMarkers={["human1","heart1","dev"]}
+          /* triggar från vänsterkolumnen */
+          cardSelectors={["#skills-wrap","#heart-wrap","#projects-wrap"]}
+          /* absoluta mål i högerkolumnen */
+          slotSelectors={["#slot-human","#slot-heart","#slot-dev"]}
+          laneSelector="#icon-lane"
+          sizePx={1080}                    /* din AE 1080x1080 – skalar snyggt */
+          scale={1.4}                      /* förstora utan att sabba koordinaterna */
+          segmentDurationMs={900}
+          stateOffsetsPx={[{x:0,y:0},{x:0,y:0},{x:0,y:0}]}
+        />
       </div>
-      <ProjectsGrid items={featured} />
     </div>
-  </div>
+  </section>
 
-  <!-- Höger kolumn: animation (human → heart → developer) -->
-  <div class="relative hidden md:block">
-    <GsapMorphLottie
-      client:load
-      jsonUrl={animUrl}
-      stateMarkers={["human1", "heart1", "dev"]}
-      cardSelectors={["#skills-wrap", "#heart-wrap", "#projects-wrap"]}
-      sizePx={1600}     
-      gapX={250}        
-      yAnchor={0.5}
-      perStopYOffsetPx={[-20, 0, +16]}
-      segmentDurationMs={1200}
-    />
-  </div>
-</section>
-
-
-  <!-- Sociala länkar -->
   {links.length ? (
     <section class="mx-auto max-w-5xl mt-8">
       <ul class="flex flex-wrap gap-4 text-sm">
