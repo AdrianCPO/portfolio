@@ -1,38 +1,82 @@
 ---
-// src/pages/projects/index.astro
 import Base from "../../layouts/Base.astro";
 import Nav from "../../components/Nav.tsx";
 import Footer from "../../components/Footer.tsx";
-import ProjectsGrid, { type Project } from "../../components/ProjectsGrid.tsx";
+import ProjectsGrid, { type Project } from "../../components/ProjectsGrid.tsx"; 
+import ReposGrid from "../../components/ReposGrid.tsx";
 import { getCollection, type CollectionEntry } from "astro:content";
+import { getUserRepos } from "../../lib/github";
 
-// Samma helper som i din övriga kod (om du vill använda bilder med BASE_URL)
+
 const withBase = (p?: string) => {
-  if (!p) return undefined;
-  const base = import.meta.env.BASE_URL || "/";
-  const b = base.endsWith("/") ? base.slice(0, -1) : base;
-  const pp = p.startsWith("/") ? p.slice(1) : p;
-  return `${b}/${pp}`;
+if (!p) return undefined;
+const base = import.meta.env.BASE_URL || "/";
+const b = base.endsWith("/") ? base.slice(0, -1) : base;
+const pp = p.startsWith("/") ? p.slice(1) : p;
+return `${b}/${pp}`;
 };
+
 
 const raw = await getCollection("projects");
 const projects: Project[] = raw
-  .map((p: CollectionEntry<"projects">) => ({
-    slug: p.id.split("/").pop()?.replace(/\.(md|mdx)$/, "") ?? p.id,
-    title: p.data.title,
-    summary: p.data.summary,
-    tags: p.data.tags,
-    image: withBase(p.data.image),
-    repo: p.data.repo,
-    demo: p.data.demo,
-    date: p.data.date ?? null,
-  }))
-  .sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""));
+.map((p: CollectionEntry<"projects">) => ({
+slug: p.id.split("/").pop()?.replace(/\.(md|mdx)$/, "") ?? p.id,
+title: p.data.title,
+summary: p.data.summary,
+tags: p.data.tags,
+image: withBase(p.data.image),
+repo: p.data.repo,
+demo: p.data.demo,
+date: p.data.date ?? null,
+}))
+.sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""));
+
+
+function extractRepoName(url?: string | null) {
+if (!url) return null;
+const m = url.match(/github\.com\/[\w-]+\/([\w.-]+)/i);
+return m?.[1]?.toLowerCase() ?? null;
+}
+const existingNames = new Set(
+projects.map((p) => extractRepoName(p.repo)).filter(Boolean) as string[]
+);
+
+
+const username = "AdrianCPO";
+const token = import.meta.env.GITHUB_TOKEN as string | undefined; // valfritt
+const ghAll = await getUserRepos({ username, token, hideForks: true, includeArchived: false });
+const ghRepos = ghAll
+.filter((r) => !existingNames.has(r.name.toLowerCase()))
+.map((r) => ({
+name: r.name,
+html_url: r.html_url,
+description: r.description,
+language: r.language,
+stargazers_count: r.stargazers_count,
+forks_count: r.forks_count,
+homepage: r.homepage,
+pushed_at: r.pushed_at,
+}));
 ---
 
+
 <Base title="Projekt – Adrian">
-  <Fragment slot="header"><Nav client:load /></Fragment>
-  <h1 class="text-2xl font-bold mb-4">Projekt</h1>
-  <ProjectsGrid items={projects} />
-  <Fragment slot="footer"><Footer /></Fragment>
+<Fragment slot="header"><Nav client:load /></Fragment>
+<h1 class="text-2xl font-bold mb-4">Projekt</h1>
+
+
+<!-- Dina kuraterade case först -->
+<ProjectsGrid items={projects} />
+
+
+<!-- Övriga GitHub‑repon under, utan dubbletter -->
+{ghRepos.length ? (
+<section class="mt-10">
+<h2 class="text-xl font-semibold mb-3">Övriga GitHub‑repon</h2>
+<ReposGrid items={ghRepos} />
+</section>
+) : null}
+
+
+<Fragment slot="footer"><Footer /></Fragment>
 </Base>
