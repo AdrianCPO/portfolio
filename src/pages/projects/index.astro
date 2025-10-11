@@ -6,6 +6,7 @@ import ProjectsGrid, { type Project } from "../../components/ProjectsGrid.tsx"; 
 import ReposGrid from "../../components/ReposGrid.tsx";
 import { getCollection, type CollectionEntry } from "astro:content";
 import { getUserRepos } from "../../lib/github";
+import { effect } from "astro:schema";
 
 // Säker join av BASE_URL + path
 const withBase = (p?: string) => {
@@ -45,6 +46,18 @@ const skillMeta: Record<string, Skill> = {
   gsap:        { key: "gsap", label: "GSAP",         icon: "🌀", href: "https://gsap.com" },
   lottie:      { key: "lottie", label: "Lottie",     icon: "🎞️", href: "https://airbnb.io/lottie/#/" },
   harvest:     { key: "harvest", label: "Harvest",   icon: "⏱️", href: "https://www.getharvest.com/" },
+  wordpress:  { key: "wordpress", label: "WordPress", icon: "🪄", href: "https://wordpress.org" },
+  php:         { key: "php", label: "PHP",           icon: "🐘", href: "https://www.php.net" },
+  html:        { key: "html", label: "HTML",         icon: "📄", href: "https://developer.mozilla.org/en-US/docs/Web/HTML" },
+  css:         { key: "css", label: "CSS",           icon: "🎨", href: "https://developer.mozilla.org/en-US/docs/Web/CSS" },
+  figma:      { key: "figma", label: "Figma",       icon: "🎛️", href: "https://figma.com" },
+  git:         { key: "git", label: "Git",           icon: "🔧", href: "https://git-scm.com" },
+  github:     { key: "github", label: "GitHub",     icon: "🐙", href: "https://github.com" },
+  vite:        { key: "vite", label: "Vite",         icon: "⚡", href: "https://vitejs.dev" },
+  node:        { key: "node", label: "Node.js",     icon: "🟢", href: "https://nodejs.org" },
+  aftereffects: { key: "after effects", label: "After Effects", icon: "🎬", href: "https://www.adobe.com/aftereffects" },
+  trelloboard: { key: "trello board", label: "Trello Board", icon: "📋", href: "https://trello.com" },
+  Mysql:       { key: "mysql", label: "MySQL",       icon: "🐬", href: "https://www.mysql.com" },
 };
 
 const tagCounts = new Map<string, number>();
@@ -61,7 +74,7 @@ const derivedSkills: Skill[] = Array.from(tagCounts.entries()).map(([k, n]) => {
 });
 
 // Visa även vissa extra skills även om de inte finns i tags ännu.
-const extras = ["react", "astro", "tailwind", "typescript", "gsap", "lottie", "harvest"];
+const extras = ["react", "astro", "tailwind", "typescript", "gsap", "lottie", "harvest", "wordpress", "php", "figma", "git", "github", "vite", "node", "after effects", "trello board", "mysql", "html", "css", "javascript"];
 for (const k of extras) {
   if (!derivedSkills.some((s) => s.key === k) && skillMeta[k]) {
     derivedSkills.push(skillMeta[k]);
@@ -71,7 +84,7 @@ for (const k of extras) {
 // Sortera: flest förekomster först, sedan alfabetiskt; plocka topp 12
 const skills: Skill[] = derivedSkills
   .sort((a: Skill, b: Skill) => (b.count ?? 0) - (a.count ?? 0) || a.label.localeCompare(b.label))
-  .slice(0, 12);
+  .slice(0, 30);
 
 // ---- GitHub-repon (server/build) + filtrera bort dubbletter som redan har case ----
 function extractRepoName(url?: string | null) {
