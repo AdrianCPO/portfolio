@@ -6,26 +6,23 @@ type XY = { x: number; y: number };
 
 type Props = {
   jsonUrl: string;
-  stateMarkers: [string, string, string];   // t.ex. ["human1","heart1","dev"]
-  cardSelectors: [string, string, string];  // ["#skills-wrap","#heart-wrap","#projects-wrap"]
-  slotSelectors: [string, string, string];  // ["#slot-human","#slot-heart","#slot-dev"]
-  laneSelector: string;                     // "#icon-lane"
+  stateMarkers: [string, string, string];
+  cardSelectors: [string, string, string];
+  slotSelectors: [string, string, string];
+  laneSelector: string;
   sizePx?: number;
   media?: string;
 
-  // layout/position
   offsets?: [XY, XY, XY];
-  stateOffsetsPx?: [XY, XY, XY];            // bakåtkomp
+  stateOffsetsPx?: [XY, XY, XY];
   scaleBase?: number;
   minScale?: number;
   maxScale?: number;
 
-  // beteende
-  segmentMs?: number;                       // morph-längd (ms)
-  posMs?: number;                           // flytt-längd (ms)
+  segmentMs?: number;
+  posMs?: number;
   debug?: boolean;
   className?: string;
-  moveMs?: number;
 };
 
 export default function GsapMorphLottie({
@@ -41,12 +38,12 @@ export default function GsapMorphLottie({
   scaleBase = 1.9,
   minScale = 1.1,
   maxScale = 2.1,
-  segmentMs = 550,
-  posMs = 300,
+  segmentMs = 50,
+  posMs = 100,
   debug = false,
   className = "",
 }: Props) {
-  // ----- reduced motion → respektera OS-inställning -----
+  // reduced motion
   const prefersReduced =
     typeof window !== "undefined" &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -56,7 +53,6 @@ export default function GsapMorphLottie({
   // DOM / Lottie
   const hostRef = useRef<HTMLDivElement | null>(null);
   const animRef = useRef<AnimationItem | null>(null);
-  const loadedRef = useRef(false);
 
   // frames
   const framesRef = useRef<[number, number, number]>([0, 0, 0]);
@@ -74,7 +70,7 @@ export default function GsapMorphLottie({
   const moveTweenRef = useRef<gsap.core.Tween | null>(null);
   const morphTweenRef = useRef<gsap.core.Tween | null>(null);
 
-  // coalescing (kör bara senaste mål om flera kommer snabbt)
+  // coalescing
   const busyRef = useRef(false);
   const pendingIdxRef = useRef<number | null>(null);
 
@@ -116,7 +112,7 @@ export default function GsapMorphLottie({
       lane = laneEl();
     if (!host || !lane) return;
     const r = lane.getBoundingClientRect();
-    const base = Math.max(1e-6, Math.min(r.width, r.height)); // stabil skala efter min(width,height)
+    const base = Math.max(1e-6, Math.min(r.width, r.height));
     let s = (base / sizePx) * (scaleBase || 1);
     s = Math.max(minScale, Math.min(maxScale, s));
     gsap.set(host, { scale: s, transformOrigin: "0 0" });
@@ -146,7 +142,6 @@ export default function GsapMorphLottie({
     });
   }
 
-  // mitt-trösklar (bestäms av kortens center i dokument-koordinater)
   function computeThresholds() {
     const getCenterAbs = (sel: string) => {
       const el = qs<HTMLElement>(sel)!;
@@ -218,7 +213,6 @@ export default function GsapMorphLottie({
     });
   }
 
-  // kör bara senaste mål om flera triggers kommer snabbt
   async function runTransition(nextIdx: number, immediate = false) {
     const cur = activeIdxRef.current;
     if (cur === nextIdx) return;
@@ -252,12 +246,10 @@ export default function GsapMorphLottie({
     const p = pendingIdxRef.current;
     pendingIdxRef.current = null;
     if (p !== null && p !== activeIdxRef.current) {
-      // kör senaste väntande
       runTransition(p);
     }
   }
 
-  // räkna fram vilket index som gäller för nuvarande scroll (klampad mittpunkt)
   function currentIndexFromScroll(): number {
     const doc = document.documentElement;
     const midRaw = window.scrollY + window.innerHeight / 2;
@@ -268,14 +260,12 @@ export default function GsapMorphLottie({
     return 2;
   }
 
-  // ---------- Event wiring ----------
+  // scroll → throttla med rAF
   const scrollRafRef = useRef(false);
   function onScrollRaf() {
     scrollRafRef.current = false;
     const idx = currentIndexFromScroll();
-    if (idx !== activeIdxRef.current) {
-      runTransition(idx);
-    }
+    if (idx !== activeIdxRef.current) runTransition(idx);
   }
   function onScroll() {
     if (!scrollRafRef.current) {
@@ -289,7 +279,7 @@ export default function GsapMorphLottie({
     applyScale();
     measureCentersInLane();
     computeThresholds();
-    // håll kvar exakt på nuvarande plats/frame
+    // håll kvar exakt pos
     const idx = activeIdxRef.current;
     const c = centersLaneRef.current[idx];
     gsap.set(hostRef.current, {
@@ -314,6 +304,17 @@ export default function GsapMorphLottie({
       zIndex: "3",
       willChange: "transform",
       transform: "translateZ(0)",
+      opacity: "0", // döljs tills första frame satts
+    });
+
+    // Förbered layout direkt (innan Lottie laddas)
+    remeasureAll();
+    const initIdx = currentIndexFromScroll();
+    activeIdxRef.current = initIdx;
+    const c0 = centersLaneRef.current[initIdx];
+    gsap.set(host, {
+      x: Math.round(c0.x - sizePx / 2),
+      y: Math.round(c0.y - sizePx / 2),
     });
 
     const anim = lottie.loadAnimation({
@@ -323,32 +324,22 @@ export default function GsapMorphLottie({
       autoplay: false,
       path: jsonUrl,
       rendererSettings: {
-        progressiveLoad: true,
+        progressiveLoad: false,            // snabbare first paint
         preserveAspectRatio: "xMinYMin meet",
         className: "lottie-svg",
       },
     });
 
     (anim as any).addEventListener("DOMLoaded", () => {
-      loadedRef.current = true;
-      anim.setSubframe(false); // viktigt för att undvika microflimmer
+      anim.setSubframe(false);            // mindre flimmer
       readMarkerFrames(anim);
-      remeasureAll();
-
-      // initial index för aktuell scroll
-      const initIdx = currentIndexFromScroll();
-      activeIdxRef.current = initIdx;
-
-      // ställ pos + frame exakt (ingen tween)
+      // sätt första frame exakt
       const [f0, f1, f2] = framesRef.current;
-      const c = centersLaneRef.current[initIdx];
-      gsap.set(host, {
-        x: Math.round(c.x - sizePx / 2),
-        y: Math.round(c.y - sizePx / 2),
-      });
       try {
         anim.goToAndStop(initIdx === 0 ? f0 : initIdx === 1 ? f1 : f2, true);
       } catch {}
+      // fade in när första framen är säkrad
+      gsap.to(host, { opacity: 1, duration: 0.18, ease: "power1.out" });
 
       // observers
       if (!roRef.current) {
@@ -388,22 +379,24 @@ export default function GsapMorphLottie({
 
     animRef.current?.destroy();
     animRef.current = null;
-    loadedRef.current = false;
-
-    busyRef.current = false;
-    pendingIdxRef.current = null;
   }
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+
+    // intern media-gating (ersätter client:media i .astro)
     const mql = window.matchMedia(media);
-    const handler = () => {
-      mql.matches ? enable() : disable();
+    const handle = () => {
+      if (mql.matches) {
+        enable();
+      } else {
+        disable();
+      }
     };
-    handler();
-    mql.addEventListener("change", handler);
+    handle();
+    mql.addEventListener("change", handle);
     return () => {
-      mql.removeEventListener("change", handler);
+      mql.removeEventListener("change", handle);
       disable();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

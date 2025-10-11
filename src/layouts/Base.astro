@@ -1,22 +1,39 @@
 ---
-const { title = "Portfolio", description = "" } = Astro.props;
+export interface Props {
+  title?: string;
+  description?: string;
+  /** Förladdning av Lottie-JSON */
+  preloadAnimUrl?: string;
+}
+const { title = "Portfolio", description = "", preloadAnimUrl } = Astro.props;
+
 import "../styles/global.css";
 ---
 <html lang="sv" class="h-full">
   <head>
-  <!-- ... -->
-  <meta name="color-scheme" content="light dark" />
-  <meta charset="utf-8" />
+    <meta name="color-scheme" content="light dark" />
+    <meta charset="utf-8" />
+
+    {preloadAnimUrl && (
+      <link
+        rel="preload"
+        href={preloadAnimUrl}
+        as="fetch"
+        type="application/json"
+        crossorigin="anonymous"
+      />
+    )}
+
     <script is:inline>
-    (() => {
-      const saved = localStorage.getItem("theme");
-      const system = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-      const theme = saved ?? system;
-      document.documentElement.classList.toggle("dark", theme === "dark");
-    })();
-  </script>
-</head>
-<body class="min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+      (() => {
+        const saved = localStorage.getItem("theme");
+        const system = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        const theme = saved ?? system;
+        document.documentElement.classList.toggle("dark", theme === "dark");
+      })();
+    </script>
+  </head>
+  <body class="min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
     <slot name="header" />
     <main class="mx-auto max-w-7xl px-4 py-8">
       <slot />

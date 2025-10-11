@@ -75,7 +75,7 @@ const allProjects: Project[] = raw
 const featured = allProjects.slice(0, 3);
 ---
 
-<Base title={`${name} – Profil`}>
+<Base title={`${name} – Profil`} preloadAnimUrl={animUrl}>
   <Fragment slot="header"><Nav client:load /></Fragment>
 
   <section class="mx-auto max-w-6xl px-0 py-6 sm:py-10">
@@ -199,20 +199,21 @@ const featured = allProjects.slice(0, 3);
     <div id="slot-heart" class="opacity-0 pointer-events-none"></div>
     <div id="slot-dev"   class="opacity-0 pointer-events-none"></div>
 
-    <GsapMorphLottie
-      client:media="(min-width: 1280px)"
-      jsonUrl={animUrl}
-      stateMarkers={["human1","heart1","dev"]}
-      cardSelectors={["#skills-wrap","#heart-wrap","#projects-wrap"]}
-      slotSelectors={["#slot-human","#slot-heart","#slot-dev"]}
-      laneSelector="#icon-lane"
-      sizePx={1080}
-      scaleBase={1.8}
-      minScale={1.1}
-      maxScale={2.0}
-      moveMs={0.20}
-    
-          />
+ <GsapMorphLottie
+    client:load
+    media="(min-width: 1280px)"
+    jsonUrl={animUrl}
+    stateMarkers={["human1","heart1","dev"]}
+    cardSelectors={["#skills-wrap","#heart-wrap","#projects-wrap"]}
+    slotSelectors={["#slot-human","#slot-heart","#slot-dev"]}
+    laneSelector="#icon-lane"
+    sizePx={1080}
+    scaleBase={1.9}
+    minScale={1.1}
+    maxScale={2.1}
+    posMs={250}
+    segmentMs={500}
+  />
   </div>
 </div>
   </section>
