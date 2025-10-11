@@ -38,8 +38,8 @@ export default function GsapMorphLottie({
   scaleBase = 1.9,
   minScale = 1.1,
   maxScale = 2.1,
-  segmentMs = 50,
-  posMs = 100,
+  segmentMs = 500,
+  posMs = 200,
   debug = false,
   className = "",
 }: Props) {
