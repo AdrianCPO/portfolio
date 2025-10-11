@@ -81,28 +81,27 @@ const featured = allProjects.slice(0, 3);
   <section class="mx-auto max-w-6xl px-0 py-6 sm:py-10">
     <div class="grid gap-6 sm:grid-cols-[auto,1fr] sm:items-center">
       <div id="name-wrap" class="inline-flex items-center relative">
-  <!-- LOGGAN FÖRE TEXTEN -->
- <video
-  id="logo-anim"
-  class="neon neon-pulse pointer-events-none mr-3
-         w-[96px] h-[96px] sm:w-[128px] sm:h-[128px]
-         opacity-0 scale-90 transition duration-300 ease-out"
-  playsinline muted preload="auto"
->
-  {logoWebm && <source src={logoWebm} type="video/webm" />}
-  {logoMp4  && <source src={logoMp4}  type="video/mp4"  />}
-</video>
+        <!-- LOGGAN FÖRE TEXTEN -->
+        <video
+          id="logo-anim"
+          class="neon neon-pulse pointer-events-none mr-3
+                 w-[96px] h-[96px] sm:w-[128px] sm:h-[128px]
+                 opacity-0 scale-90 transition duration-300 ease-out"
+          playsinline muted preload="auto"
+        >
+          {logoWebm && <source src={logoWebm} type="video/webm" />}
+          {logoMp4  && <source src={logoMp4}  type="video/mp4"  />}
+        </video>
 
-  <h1 id="name-el" class="text-3xl sm:text-4xl font-bold tracking-tight">
-    {name}
-  </h1>
-</div>
-
-        <p class="mt-1 text-lg">
-          {titlePrimary} · <span class="opacity-80">{titleSecondary}</span>
-        </p>
-        <p class="mt-4 max-w-2xl leading-relaxed opacity-90">{intro}</p>
+        <h1 id="name-el" class="text-3xl sm:text-4xl font-bold tracking-tight">
+          {name}
+        </h1>
       </div>
+
+      <p class="mt-1 text-lg">
+        {titlePrimary} · <span class="opacity-80">{titleSecondary}</span>
+      </p>
+      <p class="mt-4 max-w-2xl leading-relaxed opacity-90">{intro}</p>
     </div>
 
     <div class="mt-8 grid gap-3 sm:grid-cols-3 text-sm">
@@ -193,32 +192,28 @@ const featured = allProjects.slice(0, 3);
       </div>
     </div>
 
-    <!-- HÖGERKOLUMN: Lottie-ikonspår -->
-    <div class="relative hidden xl:block">
-      <div id="icon-lane" class="sticky top-16 relative">
-        <div id="slot-human" class="opacity-0 pointer-events-none"></div>
-        <div id="slot-heart" class="opacity-0 pointer-events-none"></div>
-        <div id="slot-dev"   class="opacity-0 pointer-events-none"></div>
+   <!-- HÖGERKOLUMN: Lottie-ikonspår -->
+<div class="relative hidden xl:block">
+  <div id="icon-lane" class="sticky top-16 relative">
+    <div id="slot-human" class="opacity-0 pointer-events-none"></div>
+    <div id="slot-heart" class="opacity-0 pointer-events-none"></div>
+    <div id="slot-dev"   class="opacity-0 pointer-events-none"></div>
 
-        <GsapMorphLottie
-          client:media="(min-width: 1280px)"
-          jsonUrl={animUrl}
-          stateMarkers={["human1","heart1","dev"]}
-          cardSelectors={["#skills-wrap","#heart-wrap","#projects-wrap"]}
-          slotSelectors={["#slot-human","#slot-heart","#slot-dev"]}
-          laneSelector="#icon-lane"
-          sizePx={1080}
-          scaleBase={1.95}
-          minScale={1.25}
-          maxScale={2.2}
-          offsets={[
-            { x: -80, y: -120 },  // human
-            { x: -80, y: -100 },  // heart
-            { x: -80, y: -105 },  // dev
-          ]}
-        />
-      </div>
-    </div>
+    <GsapMorphLottie
+      client:media="(min-width: 1280px)"
+      jsonUrl={animUrl}
+      stateMarkers={["human1","heart1","dev"]}
+      cardSelectors={["#skills-wrap","#heart-wrap","#projects-wrap"]}
+      slotSelectors={["#slot-human","#slot-heart","#slot-dev"]}
+      laneSelector="#icon-lane"
+      sizePx={1080}
+      scaleBase={1.8}
+      minScale={1.1}
+      maxScale={2.0}
+      moveMs={0.20}
+          />
+  </div>
+</div>
   </section>
 
   {links.length ? (
@@ -234,93 +229,116 @@ const featured = allProjects.slice(0, 3);
   <Fragment slot="footer"><Footer /></Fragment>
 
   <!-- Hover → spela en gång → frys sista frame -->
- <script type="module">
-  const wrap = document.getElementById('name-wrap');
-  /** @type {HTMLVideoElement|null} */
-  const video = document.getElementById('logo-anim');
+  <script type="module">
+    const wrap = document.getElementById('name-wrap');
+    /** @type {HTMLVideoElement|null} */
+    const video = document.getElementById('logo-anim');
 
-  let playedOnce = false;
+    let playedOnce = false;
 
-  function showAndPlay() {
-    if (!video) return;
-    // visa (fade/scale in)
-    video.classList.add('opacity-100', 'scale-100');
+    function showAndPlay() {
+      if (!video) return;
+      // visa (fade/scale in)
+      video.classList.add('opacity-100', 'scale-100');
 
-    // spela bara första gången
-    if (!playedOnce) {
-      try {
-        video.currentTime = 0;
-        void video.play();
-      } catch {}
-    }
-  }
-
-  video?.addEventListener('ended', () => {
-    playedOnce = true;
-    try {
-      video.pause();
-      if (!Number.isNaN(video.duration)) {
-        video.currentTime = Math.max(0, video.duration - 0.01);
+      // spela bara första gången
+      if (!playedOnce) {
+        try {
+          video.currentTime = 0;
+          void video.play();
+        } catch {}
       }
-    } catch {}
-  });
-
-  // desktop + mobil
-  wrap?.addEventListener('mouseenter', showAndPlay, { passive: true });
-  wrap?.addEventListener('click', showAndPlay, { passive: true });
-</script>
-
-<style>
-  /* LIGHT THEME (default) – mörk halo */
-  :root {
-    --neon-core: rgba(0,0,0,0.55);
-    --neon-mid:  rgba(0,0,0,0.35);
-    --neon-outer:rgba(0,0,0,0.22);
-    --neon-pulse-scale: 1; /* styr intensitet i keyframes */
-  }
-
-  /* DARK THEME – funkar om .dark sitter på html ELLER body, eller data-theme="dark" används */
-  html.dark, body.dark, :root[data-theme="dark"] {
-    --neon-core:  #ffffff;
-    --neon-mid:   rgba(255,255,255,0.85);
-    --neon-outer: rgba(255,255,255,0.65);
-    --neon-pulse-scale: 1.25; /* lite starkare puls i mörkt tema */
-  }
-
-  /* Basglow runt loggan */
-  #logo-anim.neon {
-    will-change: filter;
-    filter:
-      drop-shadow(0 0 6px  var(--neon-core))
-      drop-shadow(0 0 16px var(--neon-mid))
-      drop-shadow(0 0 32px var(--neon-outer));
-  }
-
-  /* Puls – aktiv så länge .neon-pulse finns */
-  #logo-anim.neon-pulse {
-    animation: neonPulse 2.6s ease-in-out infinite both;
-  }
-
-  @keyframes neonPulse {
-    0%, 100% {
-      filter:
-        drop-shadow(0 0 calc(6px  * var(--neon-pulse-scale))  var(--neon-core))
-        drop-shadow(0 0 calc(16px * var(--neon-pulse-scale))  var(--neon-mid))
-        drop-shadow(0 0 calc(32px * var(--neon-pulse-scale))  var(--neon-outer));
     }
-    50% {
-      filter:
-        drop-shadow(0 0 calc(10px * var(--neon-pulse-scale)) var(--neon-core))
-        drop-shadow(0 0 calc(26px * var(--neon-pulse-scale)) var(--neon-mid))
-        drop-shadow(0 0 calc(52px * var(--neon-pulse-scale)) var(--neon-outer));
+
+    video?.addEventListener('ended', () => {
+      playedOnce = true;
+      try {
+        video.pause();
+        if (!Number.isNaN(video.duration)) {
+          video.currentTime = Math.max(0, video.duration - 0.01);
+        }
+      } catch {}
+    });
+
+    // desktop + mobil
+    wrap?.addEventListener('mouseenter', showAndPlay, { passive: true });
+    wrap?.addEventListener('click', showAndPlay, { passive: true });
+  </script>
+
+  <style>
+    /* LIGHT THEME (default) – mörk halo */
+    :root {
+      --neon-core: rgba(0,0,0,0.55);
+      --neon-mid:  rgba(0,0,0,0.35);
+      --neon-outer:rgba(0,0,0,0.22);
+      --neon-pulse-scale: 1; /* styr intensitet i keyframes */
     }
-  }
 
-  /* Respektera minskad rörelse */
-  @media (prefers-reduced-motion: reduce) {
-    #logo-anim.neon-pulse { animation: none; }
-  }
-</style>
+    /* DARK THEME – funkar om .dark sitter på html ELLER body, eller data-theme="dark" används */
+    html.dark, body.dark, :root[data-theme="dark"] {
+      --neon-core:  #ffffff;
+      --neon-mid:   rgba(255,255,255,0.85);
+      --neon-outer: rgba(255,255,255,0.65);
+      --neon-pulse-scale: 1.25; /* lite starkare puls i mörkt tema */
+    }
 
+    /* Basglow runt loggan */
+    #logo-anim.neon {
+      will-change: filter;
+      filter:
+        drop-shadow(0 0 6px  var(--neon-core))
+        drop-shadow(0 0 16px var(--neon-mid))
+        drop-shadow(0 0 32px var(--neon-outer));
+    }
 
+    /* Puls – aktiv så länge .neon-pulse finns */
+    #logo-anim.neon-pulse {
+      animation: neonPulse 2.6s ease-in-out infinite both;
+    }
+
+    @keyframes neonPulse {
+      0%, 100% {
+        filter:
+          drop-shadow(0 0 calc(6px  * var(--neon-pulse-scale))  var(--neon-core))
+          drop-shadow(0 0 calc(16px * var(--neon-pulse-scale))  var(--neon-mid))
+          drop-shadow(0 0 calc(32px * var(--neon-pulse-scale))  var(--neon-outer));
+      }
+      50% {
+        filter:
+          drop-shadow(0 0 calc(10px * var(--neon-pulse-scale)) var(--neon-core))
+          drop-shadow(0 0 calc(26px * var(--neon-pulse-scale)) var(--neon-mid))
+          drop-shadow(0 0 calc(52px * var(--neon-pulse-scale)) var(--neon-outer));
+      }
+    }
+
+    /* Respektera minskad rörelse */
+    @media (prefers-reduced-motion: reduce) {
+      #logo-anim.neon-pulse { animation: none; }
+    }
+
+    /* --- NYTT: stoppa sidledsskroll och klipp lane --- */
+    #icon-lane {
+      overflow: clip;          /* modern */
+      overflow: hidden;        /* fallback */
+      contain: layout paint;
+      isolation: isolate;
+    }
+    html, body {
+      overflow-x: clip;        /* modern */
+      overflow-x: hidden;      /* fallback */
+    }
+    /* Klipp lane så inget orsakar sidledsskroll */
+#icon-lane {
+  overflow: clip;       /* fallback: hidden */
+  contain: layout paint;
+  isolation: isolate;
+}
+
+/* Slot-fallback så Lottie aldrig klipps bort om JS laddar sent */
+#slot-human, #slot-heart, #slot-dev { min-height: 200px; }
+
+html, body { overflow-x: clip; }   /* sista skyddet mot sidledsskroll */
+  </style>
+
+  
 </Base>
