@@ -25,7 +25,7 @@ type Props = {
   posMs?: number;                           // flytt-längd (ms)
   debug?: boolean;
   className?: string;
-   moveMs?: number;    
+  moveMs?: number;
 };
 
 export default function GsapMorphLottie({
@@ -41,11 +41,18 @@ export default function GsapMorphLottie({
   scaleBase = 1.9,
   minScale = 1.1,
   maxScale = 2.1,
-  segmentMs = 650,     // LÅNG och mjuk morph
-  posMs = 400,          // långsam förflyttning mellan slots
+  segmentMs = 550,
+  posMs = 300,
   debug = false,
   className = "",
 }: Props) {
+  // ----- reduced motion → respektera OS-inställning -----
+  const prefersReduced =
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const POS_MS = prefersReduced ? 0 : posMs;
+  const SEG_MS = prefersReduced ? 0 : segmentMs;
+
   // DOM / Lottie
   const hostRef = useRef<HTMLDivElement | null>(null);
   const animRef = useRef<AnimationItem | null>(null);
@@ -58,21 +65,31 @@ export default function GsapMorphLottie({
   const activeIdxRef = useRef(0);
   const thresholdsRef = useRef<{ t1: number; t2: number }>({ t1: 0, t2: 1 });
   const centersLaneRef = useRef<[XY, XY, XY]>([
-    { x: 0, y: 0 }, { x: 0, y: 0 }, { x: 0, y: 0 },
+    { x: 0, y: 0 },
+    { x: 0, y: 0 },
+    { x: 0, y: 0 },
   ]);
 
   // tweens
   const moveTweenRef = useRef<gsap.core.Tween | null>(null);
   const morphTweenRef = useRef<gsap.core.Tween | null>(null);
-  const chainRef = useRef<Promise<void>>(Promise.resolve());
+
+  // coalescing (kör bara senaste mål om flera kommer snabbt)
+  const busyRef = useRef(false);
+  const pendingIdxRef = useRef<number | null>(null);
 
   // observers
   const roRef = useRef<ResizeObserver | null>(null);
 
   const effOffsets: [XY, XY, XY] =
-    (offsets ?? stateOffsetsPx ?? [{ x: 0, y: 0 }, { x: 0, y: 0 }, { x: 0, y: 0 }]) as [XY, XY, XY];
+    (offsets ?? stateOffsetsPx ?? [
+      { x: 0, y: 0 },
+      { x: 0, y: 0 },
+      { x: 0, y: 0 },
+    ]) as [XY, XY, XY];
 
-  const qs = <T extends HTMLElement>(sel: string) => document.querySelector<T>(sel) || undefined;
+  const qs = <T extends HTMLElement>(sel: string) =>
+    document.querySelector<T>(sel) || undefined;
   const laneEl = () => qs<HTMLElement>(laneSelector);
   const log = (...a: any[]) => debug && console.log("[MorphLottie]", ...a);
 
@@ -82,7 +99,9 @@ export default function GsapMorphLottie({
     const ip = Number(md?.ip ?? 0);
     const op = Number(md?.op ?? 1);
     const end = Math.max(ip + 1, op - 1);
-    const markers = new Map<string, number>((md?.markers ?? []).map((m: any) => [String(m.cm), Number(m.tm)]));
+    const markers = new Map<string, number>(
+      (md?.markers ?? []).map((m: any) => [String(m.cm), Number(m.tm)])
+    );
     const [m0, m1, m2] = stateMarkers;
     const f0 = markers.get(m0) ?? ip;
     const f1 = markers.get(m1) ?? Math.round((ip + end) / 2);
@@ -93,7 +112,8 @@ export default function GsapMorphLottie({
 
   // ---------- Geometry ----------
   function applyScale() {
-    const host = hostRef.current, lane = laneEl();
+    const host = hostRef.current,
+      lane = laneEl();
     if (!host || !lane) return;
     const r = lane.getBoundingClientRect();
     const base = Math.max(1e-6, Math.min(r.width, r.height)); // stabil skala efter min(width,height)
@@ -109,8 +129,8 @@ export default function GsapMorphLottie({
       const el = qs<HTMLElement>(sel)!;
       const r = el.getBoundingClientRect();
       return {
-        x: (r.left - lr.left) + r.width / 2 + (effOffsets[i]?.x ?? 0),
-        y: (r.top  - lr.top)  + r.height/ 2 + (effOffsets[i]?.y ?? 0),
+        x: r.left - lr.left + r.width / 2 + (effOffsets[i]?.x ?? 0),
+        y: r.top - lr.top + r.height / 2 + (effOffsets[i]?.y ?? 0),
       };
     }) as [XY, XY, XY];
     centersLaneRef.current = c;
@@ -142,29 +162,37 @@ export default function GsapMorphLottie({
 
   // ---------- Helpers ----------
   function posToIndex(index: number, immediate = false) {
-    const host = hostRef.current; if (!host) return;
+    const host = hostRef.current;
+    if (!host) return;
     const c = centersLaneRef.current[index];
     const x = Math.round(c.x - sizePx / 2);
     const y = Math.round(c.y - sizePx / 2);
 
     moveTweenRef.current?.kill();
-    if (immediate || posMs <= 0) {
+    if (immediate || POS_MS <= 0) {
       gsap.set(host, { x, y });
     } else {
       moveTweenRef.current = gsap.to(host, {
-        x, y, duration: posMs / 1000, ease: "power2.inOut", overwrite: true,
+        x,
+        y,
+        duration: POS_MS / 1000,
+        ease: "power2.inOut",
+        overwrite: true,
       });
     }
   }
 
   function morphExact(fromIdx: number, toIdx: number): Promise<void> {
     return new Promise((resolve) => {
-      const anim = animRef.current; if (!anim) return resolve();
+      const anim = animRef.current;
+      if (!anim) return resolve();
       const [f0, f1, f2] = framesRef.current;
       const from = fromIdx === 0 ? f0 : fromIdx === 1 ? f1 : f2;
-      const to   =  toIdx === 0 ? f0 :  toIdx === 1 ? f1 : f2;
+      const to = toIdx === 0 ? f0 : toIdx === 1 ? f1 : f2;
       if (from === to) {
-        try { anim.goToAndStop(to, true); } catch {}
+        try {
+          anim.goToAndStop(to, true);
+        } catch {}
         return resolve();
       }
 
@@ -172,53 +200,68 @@ export default function GsapMorphLottie({
       const proxy = { t: 0 };
       morphTweenRef.current = gsap.to(proxy, {
         t: 1,
-        duration: (segmentMs || 1400) / 1000,
+        duration: (SEG_MS || 1400) / 1000,
         ease: "none",
         onUpdate: () => {
           const f = Math.round(from + (to - from) * proxy.t);
-          try { anim.goToAndStop(f, true); } catch {}
+          try {
+            anim.goToAndStop(f, true);
+          } catch {}
         },
         onComplete: () => {
-          try { anim.goToAndStop(to, true); } catch {}
+          try {
+            anim.goToAndStop(to, true);
+          } catch {}
           resolve();
         },
       });
     });
   }
 
-  function queueTransition(nextIdx: number, immediate = false) {
-    chainRef.current = chainRef.current
-      .then(async () => {
-        const cur = activeIdxRef.current;
-        if (cur === nextIdx) return;
+  // kör bara senaste mål om flera triggers kommer snabbt
+  async function runTransition(nextIdx: number, immediate = false) {
+    const cur = activeIdxRef.current;
+    if (cur === nextIdx) return;
 
-        if (immediate) {
-          // direktställ både pos + frame
-          posToIndex(nextIdx, true);
-          const [f0, f1, f2] = framesRef.current;
-          try { animRef.current?.goToAndStop(nextIdx === 0 ? f0 : nextIdx === 1 ? f1 : f2, true); } catch {}
-          activeIdxRef.current = nextIdx;
-          return;
-        }
+    if (immediate) {
+      posToIndex(nextIdx, true);
+      const [f0, f1, f2] = framesRef.current;
+      try {
+        animRef.current?.goToAndStop(nextIdx === 0 ? f0 : nextIdx === 1 ? f1 : f2, true);
+      } catch {}
+      activeIdxRef.current = nextIdx;
+      return;
+    }
 
-        // 1) flytta till sloten
-        await new Promise<void>((res) => {
-          posToIndex(nextIdx, false);
-          if (!moveTweenRef.current) return res();
-          moveTweenRef.current.eventCallback("onComplete", () => res());
-        });
+    if (busyRef.current) {
+      pendingIdxRef.current = nextIdx;
+      return;
+    }
+    busyRef.current = true;
 
-        // 2) morpha exakt
-        await morphExact(cur, nextIdx);
+    await new Promise<void>((res) => {
+      posToIndex(nextIdx, false);
+      if (!moveTweenRef.current) return res();
+      moveTweenRef.current.eventCallback("onComplete", () => res());
+    });
 
-        activeIdxRef.current = nextIdx;
-      })
-      .catch(() => {});
+    await morphExact(cur, nextIdx);
+    activeIdxRef.current = nextIdx;
+
+    busyRef.current = false;
+    const p = pendingIdxRef.current;
+    pendingIdxRef.current = null;
+    if (p !== null && p !== activeIdxRef.current) {
+      // kör senaste väntande
+      runTransition(p);
+    }
   }
 
-  // räkna fram vilket index som gäller för nuvarande scroll
+  // räkna fram vilket index som gäller för nuvarande scroll (klampad mittpunkt)
   function currentIndexFromScroll(): number {
-    const mid = window.scrollY + window.innerHeight / 2;
+    const doc = document.documentElement;
+    const midRaw = window.scrollY + window.innerHeight / 2;
+    const mid = Math.min(doc.scrollHeight - 1, Math.max(1, midRaw));
     const { t1, t2 } = thresholdsRef.current;
     if (mid < t1) return 0;
     if (mid < t2) return 1;
@@ -231,7 +274,7 @@ export default function GsapMorphLottie({
     scrollRafRef.current = false;
     const idx = currentIndexFromScroll();
     if (idx !== activeIdxRef.current) {
-      queueTransition(idx);
+      runTransition(idx);
     }
   }
   function onScroll() {
@@ -249,12 +292,16 @@ export default function GsapMorphLottie({
     // håll kvar exakt på nuvarande plats/frame
     const idx = activeIdxRef.current;
     const c = centersLaneRef.current[idx];
-    gsap.set(hostRef.current, { x: Math.round(c.x - sizePx / 2), y: Math.round(c.y - sizePx / 2) });
+    gsap.set(hostRef.current, {
+      x: Math.round(c.x - sizePx / 2),
+      y: Math.round(c.y - sizePx / 2),
+    });
   }
 
   // ---------- Lifecycle ----------
   function enable() {
-    const host = hostRef.current, lane = laneEl();
+    const host = hostRef.current,
+      lane = laneEl();
     if (!host || !lane) return;
 
     Object.assign(host.style, {
@@ -284,17 +331,24 @@ export default function GsapMorphLottie({
 
     (anim as any).addEventListener("DOMLoaded", () => {
       loadedRef.current = true;
+      anim.setSubframe(false); // viktigt för att undvika microflimmer
       readMarkerFrames(anim);
       remeasureAll();
 
       // initial index för aktuell scroll
       const initIdx = currentIndexFromScroll();
       activeIdxRef.current = initIdx;
+
       // ställ pos + frame exakt (ingen tween)
       const [f0, f1, f2] = framesRef.current;
       const c = centersLaneRef.current[initIdx];
-      gsap.set(host, { x: Math.round(c.x - sizePx / 2), y: Math.round(c.y - sizePx / 2) });
-      try { anim.goToAndStop(initIdx === 0 ? f0 : initIdx === 1 ? f1 : f2, true); } catch {}
+      gsap.set(host, {
+        x: Math.round(c.x - sizePx / 2),
+        y: Math.round(c.y - sizePx / 2),
+      });
+      try {
+        anim.goToAndStop(initIdx === 0 ? f0 : initIdx === 1 ? f1 : f2, true);
+      } catch {}
 
       // observers
       if (!roRef.current) {
@@ -303,7 +357,10 @@ export default function GsapMorphLottie({
             remeasureAll();
           });
         });
-        cardSelectors.forEach((sel) => { const el = qs<HTMLElement>(sel); if (el) ro.observe(el); });
+        cardSelectors.forEach((sel) => {
+          const el = qs<HTMLElement>(sel);
+          if (el) ro.observe(el);
+        });
         roRef.current = ro;
       }
 
@@ -321,26 +378,44 @@ export default function GsapMorphLottie({
     window.removeEventListener("resize", remeasureAll as any);
     window.removeEventListener("orientationchange", remeasureAll as any);
 
-    roRef.current?.disconnect(); roRef.current = null;
+    roRef.current?.disconnect();
+    roRef.current = null;
 
-    moveTweenRef.current?.kill(); moveTweenRef.current = null;
-    morphTweenRef.current?.kill(); morphTweenRef.current = null;
+    moveTweenRef.current?.kill();
+    moveTweenRef.current = null;
+    morphTweenRef.current?.kill();
+    morphTweenRef.current = null;
 
-    animRef.current?.destroy(); animRef.current = null;
+    animRef.current?.destroy();
+    animRef.current = null;
     loadedRef.current = false;
 
-    chainRef.current = Promise.resolve();
+    busyRef.current = false;
+    pendingIdxRef.current = null;
   }
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     const mql = window.matchMedia(media);
-    const handler = () => { mql.matches ? enable() : disable(); };
+    const handler = () => {
+      mql.matches ? enable() : disable();
+    };
     handler();
     mql.addEventListener("change", handler);
-    return () => { mql.removeEventListener("change", handler); disable(); };
+    return () => {
+      mql.removeEventListener("change", handler);
+      disable();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [jsonUrl, media, sizePx, laneSelector, ...cardSelectors, ...slotSelectors, ...stateMarkers]);
+  }, [
+    jsonUrl,
+    media,
+    sizePx,
+    laneSelector,
+    ...cardSelectors,
+    ...slotSelectors,
+    ...stateMarkers,
+  ]);
 
   return (
     <div ref={hostRef} className={className}>
