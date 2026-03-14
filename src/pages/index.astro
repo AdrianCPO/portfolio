@@ -193,7 +193,7 @@ const featured = allProjects.slice(0, 3);
               <h3 class="font-semibold">{p.title}</h3>
 
               {p.summary && (
-                <p class="mt-1 text-sm opacity-80">{p.summary}</p>
+                <p class="mt-1 text-sm opacity-80 line-clamp-2">{p.summary}</p>
               )}
 
               {p.tags?.length ? (

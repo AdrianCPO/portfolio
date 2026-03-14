@@ -2,9 +2,9 @@
 import Base from "../../layouts/Base.astro";
 import Nav from "../../components/Nav.tsx";
 import Footer from "../../components/Footer.tsx";
+import ProjectHeroMedia from "../../components/ProjectHeroMedia.tsx";
 import { getCollection } from "astro:content";
 
-// Säker join av BASE_URL + path (hanterar saknad/extra slash)
 function joinBase(path?: string) {
   if (!path) return undefined;
   const base = (import.meta.env.BASE_URL ?? "/") as string;
@@ -16,40 +16,100 @@ function joinBase(path?: string) {
 export async function getStaticPaths() {
   const entries = await getCollection("projects");
   return entries.map((entry) => ({
-    params: { slug: entry.slug },   // använd entry.slug direkt
+    params: { slug: entry.slug },
     props: { entry },
   }));
 }
 
 const { entry } = Astro.props;
-const { title, summary, tags = [], repo, demo, image, poster } = entry.data;
+const { title, summary, tags = [], repo, demo, image, poster, previewVideo } = entry.data;
 const { Content } = await entry.render();
 ---
+
 <Base title={`${title} – Projekt`}>
   <Fragment slot="header"><Nav client:load /></Fragment>
 
-  <article class="prose prose-slate dark:prose-invert max-w-none">
-    <header class="mb-6">
-      <h1 class="mb-2">{title}</h1>
-      <div class="flex flex-wrap gap-2 text-xs">
-        {tags.map((t: string) => <span class="px-2 py-0.5 border rounded">{t}</span>)}
-      </div>
-      {summary && <p class="opacity-80 mt-2">{summary}</p>}
-      <div class="mt-3 flex gap-3 text-sm">
-        {repo && <a class="underline" href={repo}>GitHub</a>}
-        {demo && <a class="underline" href={demo}>Demo</a>}
-      </div>
-    </header>
+  <section class="mx-auto max-w-6xl px-4 py-8 sm:py-12">
+    <a
+      href={joinBase("projects/")}
+      class="inline-flex items-center text-sm opacity-70 transition hover:opacity-100"
+    >
+      ← Tillbaka till projekt
+    </a>
 
-    {(poster || image) && (
-      <img
-        src={joinBase(poster ?? image)}
-        alt={title}
-        class="rounded-xl border"
-      />
-    )}  
-    <Content />
-  </article>
+    <div class="mt-6 grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-stretch">
+      <div class="rounded-2xl border p-6 sm:p-8 min-h-[420px] flex flex-col justify-center">
+        <p class="text-sm uppercase tracking-[0.18em] opacity-60">Projektcase</p>
+        <h1 class="mt-3 text-3xl font-bold tracking-tight sm:text-5xl">{title}</h1>
 
-  <Fragment slot="footer"><Footer /></Fragment>   
+        {summary && (
+          <p class="mt-4 max-w-2xl text-base leading-relaxed opacity-80 sm:text-lg">
+            {summary}
+          </p>
+        )}
+
+        {tags.length ? (
+          <div class="mt-5 flex flex-wrap gap-2 text-xs sm:text-sm">
+            {tags.map((t: string) => (
+              <span class="rounded-full border px-3 py-1">{t}</span>
+            ))}
+          </div>
+        ) : null}
+
+        <div class="mt-6 flex flex-wrap gap-3">
+          {demo && (
+            <a
+              href={demo}
+              target="_blank"
+              rel="noopener"
+              class="rounded-xl border px-4 py-2 text-sm font-medium transition hover:-translate-y-0.5 hover:shadow-sm"
+            >
+              Live demo
+            </a>
+          )}
+          {repo && (
+            <a
+              href={repo}
+              target="_blank"
+              rel="noopener"
+              class="rounded-xl border px-4 py-2 text-sm font-medium transition hover:-translate-y-0.5 hover:shadow-sm"
+            >
+              GitHub
+            </a>
+          )}
+        </div>
+      </div>
+
+      {(poster || image) && (
+        <ProjectHeroMedia
+        client:load
+        title={title}
+        poster={joinBase(poster ?? image)}
+        video={joinBase(previewVideo)}
+        />
+      )}
+      
+    </div>
+
+    <div class="mt-10 rounded-2xl border p-6 sm:p-8">
+      <article
+        class="prose prose-slate dark:prose-invert max-w-none
+         prose-headings:scroll-mt-24
+         prose-h2:mt-10
+         prose-h2:mb-3
+         prose-h2:text-2xl
+         prose-h2:font-bold
+         prose-h2:tracking-tight
+         prose-h2:border-b
+         prose-h2:pb-2
+         prose-p:leading-7
+         prose-p:opacity-90
+         prose-strong:text-inherit"
+      >
+      <Content />
+      </article>
+    </div>
+  </section>
+
+  <Fragment slot="footer"><Footer /></Fragment>
 </Base>
