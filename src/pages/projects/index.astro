@@ -36,58 +36,126 @@ const projects: Project[] = raw
   }))
   .sort((a: Project, b: Project) => (b.date ?? "").localeCompare(a.date ?? ""));
 
-// ---- Nytt: liten “Kompetenser”-sektion byggd från taggar (+ extras) ----
-type Skill = { key: string; label: string; icon: string; count?: number; href?: string };
-
-const skillMeta: Record<string, Skill> = {
-  react:       { key: "react", label: "React",       icon: "⚛️", href: "https://react.dev" },
-  astro:       { key: "astro", label: "Astro",       icon: "🌟", href: "https://astro.build" },
-  tailwind:    { key: "tailwind", label: "Tailwind", icon: "💨", href: "https://tailwindcss.com" },
-  typescript:  { key: "typescript", label: "TypeScript", icon: "🟦", href: "https://www.typescriptlang.org" },
-  javascript:  { key: "javascript", label: "JavaScript", icon: "🟨" },
-  gsap:        { key: "gsap", label: "GSAP",         icon: "🌀", href: "https://gsap.com" },
-  lottie:      { key: "lottie", label: "Lottie",     icon: "🎞️", href: "https://airbnb.io/lottie/#/" },
-  harvest:     { key: "harvest", label: "Harvest",   icon: "⏱️", href: "https://www.getharvest.com/" },
-  wordpress:  { key: "wordpress", label: "WordPress", icon: "🪄", href: "https://wordpress.org" },
-  php:         { key: "php", label: "PHP",           icon: "🐘", href: "https://www.php.net" },
-  html:        { key: "html", label: "HTML",         icon: "📄", href: "https://developer.mozilla.org/en-US/docs/Web/HTML" },
-  css:         { key: "css", label: "CSS",           icon: "🎨", href: "https://developer.mozilla.org/en-US/docs/Web/CSS" },
-  figma:      { key: "figma", label: "Figma",       icon: "🎛️", href: "https://figma.com" },
-  git:         { key: "git", label: "Git",           icon: "🔧", href: "https://git-scm.com" },
-  github:     { key: "github", label: "GitHub",     icon: "🐙", href: "https://github.com" },
-  vite:        { key: "vite", label: "Vite",         icon: "⚡", href: "https://vitejs.dev" },
-  node:        { key: "node", label: "Node.js",     icon: "🟢", href: "https://nodejs.org" },
-  aftereffects: { key: "after effects", label: "After Effects", icon: "🎬", href: "https://www.adobe.com/aftereffects" },
-  trelloboard: { key: "trello board", label: "Trello Board", icon: "📋", href: "https://trello.com" },
-  Mysql:       { key: "mysql", label: "MySQL",       icon: "🐬", href: "https://www.mysql.com" },
-  Drupal:      { key: "drupal", label: "Drupal",     icon: "🌊", href: "https://www.drupal.org" },
-  Twig:        { key: "twig", label: "Twig",         icon: "🍃", href: "https://twig.symfony.com" },
+type Skill = {
+  key: string;
+  label: string;
+  icon: string;
+  count?: number;
+  href?: string;
 };
 
+const skillMeta: Record<string, Skill> = {
+  react: { key: "react", label: "React", icon: "⚛️", href: "https://react.dev" },
+  astro: { key: "astro", label: "Astro", icon: "🌟", href: "https://astro.build" },
+  tailwind: { key: "tailwind", label: "Tailwind", icon: "💨", href: "https://tailwindcss.com" },
+  typescript: { key: "typescript", label: "TypeScript", icon: "🟦", href: "https://www.typescriptlang.org" },
+  javascript: { key: "javascript", label: "JavaScript", icon: "🟨" },
+  gsap: { key: "gsap", label: "GSAP", icon: "🌀", href: "https://gsap.com" },
+  lottie: { key: "lottie", label: "Lottie", icon: "🎞️", href: "https://airbnb.io/lottie/#/" },
+  harvest: { key: "harvest", label: "Harvest", icon: "⏱️", href: "https://www.getharvest.com/" },
+  wordpress: { key: "wordpress", label: "WordPress", icon: "🪄", href: "https://wordpress.org" },
+  php: { key: "php", label: "PHP", icon: "🐘", href: "https://www.php.net" },
+  html: { key: "html", label: "HTML", icon: "📄", href: "https://developer.mozilla.org/en-US/docs/Web/HTML" },
+  css: { key: "css", label: "CSS", icon: "🎨", href: "https://developer.mozilla.org/en-US/docs/Web/CSS" },
+  figma: { key: "figma", label: "Figma", icon: "🎛️", href: "https://figma.com" },
+  git: { key: "git", label: "Git", icon: "🔧", href: "https://git-scm.com" },
+  github: { key: "github", label: "GitHub", icon: "🐙", href: "https://github.com" },
+  vite: { key: "vite", label: "Vite", icon: "⚡", href: "https://vitejs.dev" },
+  node: { key: "node", label: "Node.js", icon: "🟢", href: "https://nodejs.org" },
+  nextjs: { key: "nextjs", label: "Next.js", icon: "▲", href: "https://nextjs.org" },
+  jira: { key: "jira", label: "Jira", icon: "📘", href: "https://www.atlassian.com/software/jira" },
+  "after effects": {
+    key: "after effects",
+    label: "After Effects",
+    icon: "🎬",
+    href: "https://www.adobe.com/aftereffects",
+  },
+  "trello board": {
+    key: "trello board",
+    label: "Trello Board",
+    icon: "📋",
+    href: "https://trello.com",
+  },
+  mysql: { key: "mysql", label: "MySQL", icon: "🐬", href: "https://www.mysql.com" },
+  drupal: { key: "drupal", label: "Drupal", icon: "🌊", href: "https://www.drupal.org" },
+  twig: { key: "twig", label: "Twig", icon: "🍃", href: "https://twig.symfony.com" },
+};
+
+const normalizeSkillKey = (value: string) => value.trim().toLowerCase();
+
+const fallbackLabel = (key: string) =>
+  key
+    .split(/[\s-]+/)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+
 const tagCounts = new Map<string, number>();
+
 for (const p of projects) {
-  for (const t of (p.tags ?? [])) {
-    const k = String(t).toLowerCase();
-    tagCounts.set(k, (tagCounts.get(k) ?? 0) + 1);
+  for (const tag of p.tags ?? []) {
+    const key = normalizeSkillKey(String(tag));
+    tagCounts.set(key, (tagCounts.get(key) ?? 0) + 1);
   }
 }
 
-const derivedSkills: Skill[] = Array.from(tagCounts.entries()).map(([k, n]) => {
-  const meta = skillMeta[k] ?? { key: k, label: k.charAt(0).toUpperCase() + k.slice(1), icon: "🔧" };
-  return { ...meta, count: n };
+const derivedSkills: Skill[] = Array.from(tagCounts.entries()).map(([key, count]) => {
+  const meta = skillMeta[key] ?? {
+    key,
+    label: fallbackLabel(key),
+    icon: "🔧",
+  };
+
+  return {
+    ...meta,
+    count,
+  };
 });
 
-// Visa även vissa extra skills även om de inte finns i tags ännu.
-const extras = ["react", "astro", "tailwind", "typescript", "gsap", "lottie", "harvest", "wordpress", "php", "figma", "git", "github", "vite", "node", "after effects", "trello board", "mysql", "html", "css", "javascript", "drupal", "twig"];
-for (const k of extras) {
-  if (!derivedSkills.some((s) => s.key === k) && skillMeta[k]) {
-    derivedSkills.push(skillMeta[k]);
+const extras = [
+  "react",
+  "astro",
+  "tailwind",
+  "typescript",
+  "javascript",
+  "gsap",
+  "lottie",
+  "harvest",
+  "wordpress",
+  "php",
+  "figma",
+  "git",
+  "github",
+  "vite",
+  "node",
+  "nextjs",
+  "jira",
+  "after effects",
+  "trello board",
+  "mysql",
+  "html",
+  "css",
+  "drupal",
+  "twig",
+];
+
+const seen = new Set(derivedSkills.map((skill) => skill.key));
+
+for (const extra of extras) {
+  const key = normalizeSkillKey(extra);
+  const meta = skillMeta[key];
+
+  if (meta && !seen.has(key)) {
+    derivedSkills.push(meta);
+    seen.add(key);
   }
 }
 
-// Sortera: flest förekomster först, sedan alfabetiskt; plocka ut topp 30 för att inte ta över hela sidan
 const skills: Skill[] = derivedSkills
-  .sort((a: Skill, b: Skill) => (b.count ?? 0) - (a.count ?? 0) || a.label.localeCompare(b.label))
+  .sort((a, b) => {
+    const countDiff = (b.count ?? 0) - (a.count ?? 0);
+    if (countDiff !== 0) return countDiff;
+    return a.label.localeCompare(b.label, "sv");
+  })
   .slice(0, 30);
 
 // ---- GitHub-repon (server/build) + filtrera bort dubbletter som redan har case ----
@@ -125,11 +193,15 @@ const ghRepos = ghAll
 
   <!-- Kompetenser (chips) -->
   <section class="mb-6 rounded-xl border p-4">
-    <h2 class="text-base font-semibold mb-2">Kompetenser</h2>
-    <ul class="flex flex-wrap gap-2">
-      {skills.map((s) => (
+  <h2 class="text-base font-semibold mb-2">Kompetenser</h2>
+
+  <ul class="flex flex-wrap gap-2">
+    {skills.map((s) => (
+      <li>
         <a
           href={s.href ?? "#projects-list"}
+          target={s.href ? "_blank" : undefined}
+          rel={s.href ? "noreferrer" : undefined}
           class="inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs hover:bg-slate-50 dark:hover:bg-slate-800"
           aria-label={`Kompetens: ${s.label}${s.count ? `, används i ${s.count} projekt` : ""}`}
         >
@@ -137,9 +209,10 @@ const ghRepos = ghAll
           <span>{s.label}</span>
           {s.count ? <span class="opacity-70">({s.count})</span> : null}
         </a>
-      ))}
-    </ul>
-  </section>
+      </li>
+    ))}
+  </ul>
+</section>
 
   <!-- Dina kuraterade case -->
   <div id="projects-list">
