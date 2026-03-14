@@ -2,7 +2,7 @@
 import Base from "../layouts/Base.astro";
 import Nav from "../components/Nav.tsx";
 import Footer from "../components/Footer.tsx";
-import ProjectsGrid, { type Project } from "../components/ProjectsGrid.tsx";
+import type { Project } from "../components/ProjectsGrid.tsx";
 import { getCollection, type CollectionEntry } from "astro:content";
 import GsapMorphLottie from "../components/GsapMorphLottie.tsx";
 
@@ -61,11 +61,13 @@ const bgItems: BgItem[] = bgRaw
 const raw = await getCollection("projects");
 const allProjects: Project[] = raw
   .map((p: ProjEntry): Project => ({
-    slug: p.id.split("/").pop()?.replace(/\.(md|mdx)$/, "") ?? p.id,
+    slug: p.data.slug ?? p.slug,
     title: p.data.title,
     summary: p.data.summary,
     tags: p.data.tags,
     image: withBase(p.data.image),
+    poster: withBase(p.data.poster ?? p.data.image),
+    previewVideo: withBase(p.data.previewVideo),
     repo: p.data.repo,
     demo: p.data.demo,
     date: p.data.date ?? null,
@@ -169,25 +171,41 @@ const featured = allProjects.slice(0, 3);
         </div>
 
         <!-- 1-kolumn på mobil+tablet -->
-        <div class="grid grid-cols-1 gap-4 xl:hidden">
+          <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {featured.map((p) => (
-            <a href={withBase(`projects/${p.slug}/`)} class="block overflow-hidden rounded-xl border transition hover:shadow-md">
-              {p.image && (
-                <div class="relative w-full overflow-hidden rounded-t-xl bg-slate-50 dark:bg-slate-900 h-40">
-                  <img src={p.image} alt="" class="h-full w-full object-contain p-3" loading="lazy" decoding="async" />
-                </div>
+            <a
+              href={withBase(`projects/${p.slug}/`)}
+              class="block overflow-hidden rounded-xl border transition duration-300 hover:-translate-y-1 hover:shadow-md"
+            >
+            <div class="h-48 sm:h-52 md:h-56 overflow-hidden rounded-t-xl bg-slate-50 dark:bg-slate-900">
+              {p.poster && (
+                <img
+                  src={p.poster}
+                  alt={p.title}
+                  class="h-full w-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                />
               )}
-              <div class="p-4">
-                <h3 class="font-semibold">{p.title}</h3>
-                {p.summary && <p class="text-sm opacity-80 mt-1">{p.summary}</p>}
+            </div>
+
+            <div class="p-4">
+              <h3 class="font-semibold">{p.title}</h3>
+
+              {p.summary && (
+                <p class="mt-1 text-sm opacity-80">{p.summary}</p>
+              )}
+
+              {p.tags?.length ? (
+                <div class="mt-2 flex flex-wrap gap-2 text-xs">
+                    {p.tags.map((t) => (
+                  <span class="rounded border px-2 py-0.5">{t}</span>
+                  ))}
+                </div>
+               ) : null}
               </div>
             </a>
           ))}
-        </div>
-
-        <!-- På XL+: originalgridden -->
-        <div class="hidden xl:block">
-          <ProjectsGrid items={featured} />
         </div>
       </div>
     </div>

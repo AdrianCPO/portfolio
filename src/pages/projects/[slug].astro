@@ -5,7 +5,8 @@ import Footer from "../../components/Footer.tsx";
 import { getCollection } from "astro:content";
 
 // Säker join av BASE_URL + path (hanterar saknad/extra slash)
-function joinBase(path: string) {
+function joinBase(path?: string) {
+  if (!path) return undefined;
   const base = (import.meta.env.BASE_URL ?? "/") as string;
   const b = base.endsWith("/") ? base.slice(0, -1) : base;
   const p = path.startsWith("/") ? path.slice(1) : path;
@@ -21,7 +22,7 @@ export async function getStaticPaths() {
 }
 
 const { entry } = Astro.props;
-const { title, summary, tags = [], repo, demo, image } = entry.data;
+const { title, summary, tags = [], repo, demo, image, poster } = entry.data;
 const { Content } = await entry.render();
 ---
 <Base title={`${title} – Projekt`}>
@@ -40,8 +41,13 @@ const { Content } = await entry.render();
       </div>
     </header>
 
-    {image && <img src={joinBase(image)} alt="" class="rounded-xl" />}
-
+    {(poster || image) && (
+      <img
+        src={joinBase(poster ?? image)}
+        alt={title}
+        class="rounded-xl border"
+      />
+    )}  
     <Content />
   </article>
 
