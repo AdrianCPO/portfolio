@@ -2,7 +2,7 @@
 import Base from "../../layouts/Base.astro";
 import Nav from "../../components/Nav.tsx";
 import Footer from "../../components/Footer.tsx";
-import ProjectsGrid, { type Project } from "../../components/ProjectsGrid.tsx"; // <-- ändra till ProjectGrid.tsx om din fil heter så
+import ProjectsGrid, { type Project } from "../../components/ProjectsGrid.tsx"; 
 import ReposGrid from "../../components/ReposGrid.tsx";
 import { getCollection, type CollectionEntry } from "astro:content";
 import { getUserRepos } from "../../lib/github";
@@ -17,7 +17,7 @@ const withBase = (p?: string) => {
   return `${b}/${pp}`;
 };
 
-// ---- Hämta projekt (oförändrat) ----
+// ---- Hämta projekt ----
 type ProjEntry = CollectionEntry<"projects">;
 
 const raw = await getCollection("projects");
@@ -58,6 +58,8 @@ const skillMeta: Record<string, Skill> = {
   aftereffects: { key: "after effects", label: "After Effects", icon: "🎬", href: "https://www.adobe.com/aftereffects" },
   trelloboard: { key: "trello board", label: "Trello Board", icon: "📋", href: "https://trello.com" },
   Mysql:       { key: "mysql", label: "MySQL",       icon: "🐬", href: "https://www.mysql.com" },
+  Drupal:      { key: "drupal", label: "Drupal",     icon: "🌊", href: "https://www.drupal.org" },
+  Twig:        { key: "twig", label: "Twig",         icon: "🍃", href: "https://twig.symfony.com" },
 };
 
 const tagCounts = new Map<string, number>();
@@ -74,14 +76,14 @@ const derivedSkills: Skill[] = Array.from(tagCounts.entries()).map(([k, n]) => {
 });
 
 // Visa även vissa extra skills även om de inte finns i tags ännu.
-const extras = ["react", "astro", "tailwind", "typescript", "gsap", "lottie", "harvest", "wordpress", "php", "figma", "git", "github", "vite", "node", "after effects", "trello board", "mysql", "html", "css", "javascript"];
+const extras = ["react", "astro", "tailwind", "typescript", "gsap", "lottie", "harvest", "wordpress", "php", "figma", "git", "github", "vite", "node", "after effects", "trello board", "mysql", "html", "css", "javascript", "drupal", "twig"];
 for (const k of extras) {
   if (!derivedSkills.some((s) => s.key === k) && skillMeta[k]) {
     derivedSkills.push(skillMeta[k]);
   }
 }
 
-// Sortera: flest förekomster först, sedan alfabetiskt; plocka topp 12
+// Sortera: flest förekomster först, sedan alfabetiskt; plocka ut topp 30 för att inte ta över hela sidan
 const skills: Skill[] = derivedSkills
   .sort((a: Skill, b: Skill) => (b.count ?? 0) - (a.count ?? 0) || a.label.localeCompare(b.label))
   .slice(0, 30);
