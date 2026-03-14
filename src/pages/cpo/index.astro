@@ -14,12 +14,19 @@ const withBase = (p?: string) => {
 };
 
 type BgEntry = CollectionEntry<"backgrounds">;
-type BgItem = { slug: string; title: string; summary?: string; image?: string | undefined };
+type BgItem = {
+  slug: string;
+  title: string;
+  summary?: string;
+  image?: string | undefined;
+};
 
 const raw = await getCollection("backgrounds");
 const items: BgItem[] = raw
-  .sort((a: BgEntry, b: BgEntry) =>
-    (a.data.order ?? 999) - (b.data.order ?? 999) || a.data.title.localeCompare(b.data.title)
+  .sort(
+    (a: BgEntry, b: BgEntry) =>
+      (a.data.order ?? 999) - (b.data.order ?? 999) ||
+      a.data.title.localeCompare(b.data.title)
   )
   .map((p: BgEntry) => ({
     slug: p.slug,
@@ -32,9 +39,29 @@ const items: BgItem[] = raw
 <Base title="CPO – Kompetenser">
   <Fragment slot="header"><Nav client:load /></Fragment>
 
-  <h1 class="text-2xl font-bold mb-4">CPO – Färdigheter & bakgrund</h1>
-  <!-- BackgroundCards sätter id="bg-card-1..N" per kort – matchar länkarna från startsidan -->
-  <BackgroundCards items={items} />
+  <section class="mx-auto max-w-6xl px-6 pb-8 pt-12 md:px-8 md:pb-10 md:pt-16">
+    <div class="max-w-3xl">
+      <p class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+        CPO / Portfolio
+      </p>
+
+      <h1 class="text-3xl font-bold tracking-tight text-slate-900 md:text-5xl">
+        Färdigheter & bakgrund
+      </h1>
+
+      <p class="mt-5 text-base leading-7 text-slate-600 md:text-lg">
+        Här samlar jag erfarenheter från kliniskt arbete, tillverkning och
+        biomekanisk analys inom ortopedteknik. Sidorna ger en översikt av hur
+        jag arbetar. Från patientmöte och behovsanalys till tekniskt
+        genomförande, utvärdering och uppföljning.
+      </p>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-6xl px-6 pb-16 md:px-8 md:pb-24">
+    <!-- BackgroundCards sätter id="bg-card-1..N" per kort – matchar länkarna från startsidan -->
+    <BackgroundCards items={items} />
+  </section>
 
   <Fragment slot="footer"><Footer /></Fragment>
 </Base>

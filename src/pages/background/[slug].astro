@@ -1,39 +1,87 @@
 ---
-// src/pages/background/[slug].astro
 import Base from "../../layouts/Base.astro";
 import Nav from "../../components/Nav.tsx";
 import Footer from "../../components/Footer.tsx";
-import { getCollection } from "astro:content";
+import { getCollection, getEntry, render } from "astro:content";
 
 export async function getStaticPaths() {
-  const entries = await getCollection("backgrounds");
-  return entries.map((entry) => ({
-    params: { slug: entry.slug },
-    props: { entry },
+  const backgrounds = await getCollection("backgrounds");
+  return backgrounds.map((item) => ({
+    params: { slug: item.slug },
   }));
 }
 
-const { entry } = Astro.props;
-const { title, image, summary } = entry.data;
-const { Content } = await entry.render();
+const { slug } = Astro.params;
 
-const joinBase = (path: string) => {
-  const base = (import.meta.env.BASE_URL ?? "/") as string;
+if (!slug) {
+  throw new Error("Missing slug for background page.");
+}
+
+const entry = await getEntry("backgrounds", slug);
+
+if (!entry) {
+  throw new Error(`Background entry not found for slug: ${slug}`);
+}
+
+const { Content } = await render(entry);
+
+const withBase = (p?: string) => {
+  if (!p) return undefined;
+  const base = import.meta.env.BASE_URL || "/";
   const b = base.endsWith("/") ? base.slice(0, -1) : base;
-  const p = path.startsWith("/") ? path.slice(1) : path;
-  return `${b}/${p}`;
+  const pp = p.startsWith("/") ? p.slice(1) : p;
+  return `${b}/${pp}`;
 };
+
+const image = withBase(entry.data.image);
+const title = entry.data.title;
+const summary = entry.data.summary;
 ---
 
-<Base title={`${title} – Bakgrund`}>
+<Base title={`${title} – CPO`}>
   <Fragment slot="header"><Nav client:load /></Fragment>
 
-  <article class="prose prose-slate dark:prose-invert max-w-none">
-    <h1>{title}</h1>
-    {summary && <p class="opacity-80">{summary}</p>}
-    {image && <img src={joinBase(image)} alt="" class="rounded-xl my-4" />}
-    <Content />
-  </article>
+  <section class="mx-auto max-w-6xl px-6 pb-10 pt-12 md:px-8 md:pb-14 md:pt-16">
+    <div class="grid items-center gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:gap-14">
+      <div class="max-w-2xl">
+        <p class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+          CPO / Bakgrund
+        </p>
+
+        <h1 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white md:text-5xl">
+          {title}
+        </h1>
+
+        {summary && (
+          <p class="mt-5 max-w-xl text-base leading-7 text-slate-600 dark:text-slate-300 md:text-lg">
+            {summary}
+          </p>
+        )}
+      </div>
+
+      {image && (
+        <div class="rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-5 shadow-sm dark:border-slate-800 dark:from-slate-900 dark:to-slate-950 md:p-6">
+          <div class="flex min-h-[220px] items-center justify-center md:min-h-[280px]">
+            <img
+              src={image}
+              alt={title}
+              class="max-h-[220px] w-auto max-w-full object-contain md:max-h-[300px] lg:max-h-[340px]"
+              loading="eager"
+              decoding="async"
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-4xl px-6 pb-16 md:px-8 md:pb-24">
+    <article
+      class="prose prose-slate max-w-none prose-headings:scroll-mt-24 prose-headings:font-semibold prose-h2:mt-12 prose-h2:text-2xl prose-p:leading-7 prose-li:leading-7 dark:prose-invert dark:prose-headings:text-white dark:prose-p:text-slate-300 dark:prose-strong:text-white dark:prose-li:text-slate-300"
+    >
+      <Content />
+    </article>
+  </section>
 
   <Fragment slot="footer"><Footer /></Fragment>
 </Base>
