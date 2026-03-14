@@ -59,6 +59,8 @@ function CardMedia({
         <img
           src={poster}
           alt={title}
+          width={800}
+          height={450}
           className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover/media:scale-[1.02] group-hover/media:opacity-0"
           loading="lazy"
           decoding="async"
@@ -74,6 +76,7 @@ function CardMedia({
           loop
           playsInline
           preload="metadata"
+          aria-hidden="true"
         />
       )}
 
@@ -87,6 +90,7 @@ function CardMedia({
     </div>
   );
 }
+
 
 export default function ProjectsGrid({ items }: Props) {
   return (

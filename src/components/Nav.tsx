@@ -14,7 +14,6 @@ function useActivePath() {
   useEffect(() => {
     const base = (import.meta.env.BASE_URL ?? "/") as string;
     const b = base.endsWith("/") ? base : `${base}/`;
-    // Ex: /portfolio/projects/ -> /projects/
     setPath(window.location.pathname.replace(b, "/"));
   }, []);
   return path;

@@ -37,7 +37,9 @@ export default function BackgroundCards({
             <div className="flex min-h-[220px] items-center justify-center bg-slate-50 p-8 dark:bg-slate-800/60 md:min-h-full">
               <img
                 src={it.image}
-                alt=""
+                alt={it.title}      
+                width={192}
+                height={192}
                 className="max-h-48 w-auto max-w-full object-contain transition duration-300 group-hover:scale-[1.02]"
                 loading="lazy"
                 decoding="async"
