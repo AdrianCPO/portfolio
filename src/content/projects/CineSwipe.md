@@ -3,7 +3,7 @@ title: "CineSwipe"
 slug: "cineswipe"
 summary: "Ett grupprojekt i React där användaren kan swipa bland trendande filmer och serier och spara favoriter i en personlig watchlist."
 tags: ["React", "JavaScript", "Vite"]
-poster: "/images/CineSwipe.png"
+poster: "/images/CineSwipe.avif"
 previewVideo: "/videos/CineSwipe.mp4"
 repo: "https://github.com/AdrianCPO/CineSwipe"
 date: "2025-09-01"

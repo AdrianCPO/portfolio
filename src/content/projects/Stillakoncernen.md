@@ -3,7 +3,7 @@ title: "Stillakoncernen"
 slug: "stillakoncernen"
 summary: "Ett pro bono-projekt där jag var med och tog fram en ny WordPress-webbplats med fokus på tydligare struktur, bättre användarupplevelse och enkel administration för kunden."
 tags: ["WordPress", "PHP", "Figma"]
-poster: "/images/Stillakoncernen.png"
+poster: "/images/Stillakoncernen.avif"
 previewVideo: "/videos/Stillakoncernen.mp4"
 repo: "https://github.com/AdrianCPO/stillakoncernen-theme"
 demo: "https://stillakoncernen.se"

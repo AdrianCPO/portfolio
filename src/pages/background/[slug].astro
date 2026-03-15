@@ -41,46 +41,58 @@ const summary = entry.data.summary;
 <Base title={`${title} – CPO`}>
   <Fragment slot="header"><Nav client:load /></Fragment>
 
-  <section class="mx-auto max-w-6xl px-6 pb-10 pt-12 md:px-8 md:pb-14 md:pt-16">
-    <div class="grid items-center gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:gap-14">
-      <div class="max-w-2xl">
-        <p class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
-          CPO / Bakgrund
-        </p>
+  <section class="mx-auto max-w-6xl px-4 py-8 sm:py-12">
+    <a
+      href={withBase("cpo/")}
+      class="inline-flex items-center text-sm opacity-70 transition hover:opacity-100"
+    >
+      ← Tillbaka
+    </a>
 
-        <h1 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white md:text-5xl">
-          {title}
-        </h1>
+    <div class="mt-6 grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-stretch">
+      <div class="rounded-2xl border p-6 sm:p-8 min-h-[420px] flex flex-col justify-center">
+        <p class="text-sm uppercase tracking-[0.18em] opacity-60">CPO / Bakgrund</p>
+
+        <h1 class="mt-3 text-3xl font-bold tracking-tight sm:text-5xl">{title}</h1>
 
         {summary && (
-          <p class="mt-5 max-w-xl text-base leading-7 text-slate-600 dark:text-slate-300 md:text-lg">
+          <p class="mt-4 max-w-2xl text-base leading-relaxed opacity-80 sm:text-lg">
             {summary}
           </p>
         )}
       </div>
 
       {image && (
-        <div class="rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-5 shadow-sm dark:border-slate-800 dark:from-slate-900 dark:to-slate-950 md:p-6">
-          <div class="flex min-h-[220px] items-center justify-center md:min-h-[280px]">
-            <img
-              src={image}
-              alt={title}
-              class="max-h-[220px] w-auto max-w-full object-contain md:max-h-[300px] lg:max-h-[340px]"
-              loading="eager"
-              decoding="async"
-            />
-          </div>
+        <div class="rounded-2xl border p-6 sm:p-8 min-h-[420px] flex items-center justify-center">
+          <img
+            src={image}
+            alt={title}
+            class="max-h-[320px] w-auto max-w-full object-contain sm:max-h-[380px]"
+            loading="eager"
+            decoding="async"
+          />
         </div>
       )}
     </div>
-  </section>
 
-  <section class="mx-auto max-w-4xl px-6 pb-16 md:px-8 md:pb-24">
-    <article
-      class="prose prose-slate max-w-none prose-headings:scroll-mt-24 prose-headings:font-semibold prose-h2:mt-12 prose-h2:text-2xl prose-p:leading-7 prose-li:leading-7 dark:prose-invert dark:prose-headings:text-white dark:prose-p:text-slate-300 dark:prose-strong:text-white dark:prose-li:text-slate-300"
-    >
-      <Content />
-    </article>
+    <div class="mt-10 rounded-2xl border p-6 sm:p-8">
+      <article
+        class="prose prose-slate dark:prose-invert max-w-none
+         prose-headings:scroll-mt-24
+         prose-h2:mt-10
+         prose-h2:mb-3
+         prose-h2:text-2xl
+         prose-h2:font-bold
+         prose-h2:tracking-tight
+         prose-h2:border-b
+         prose-h2:pb-2
+         prose-p:leading-7
+         prose-p:opacity-90
+         prose-strong:text-inherit"
+      >
+        <Content />
+      </article>
+    </div>
   </section>
 
   <Fragment slot="footer"><Footer /></Fragment>

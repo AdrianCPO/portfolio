@@ -6,7 +6,7 @@ import ProjectsGrid, { type Project } from "../../components/ProjectsGrid.tsx";
 import ReposGrid from "../../components/ReposGrid.tsx";
 import { getCollection, type CollectionEntry } from "astro:content";
 import { getUserRepos } from "../../lib/github";
-import { effect } from "astro:schema";
+
 
 // Säker join av BASE_URL + path
 const withBase = (p?: string) => {
@@ -187,7 +187,7 @@ const ghRepos = ghAll
 ---
 
 <Base title="Projekt – Adrian">
-  <Fragment slot="header"><Nav client:load /></Fragment>
+  <Fragment slot="header"><Nav client:idle /></Fragment>
 
   <h1 class="text-2xl font-bold mb-4">Projekt</h1>
 
@@ -216,7 +216,7 @@ const ghRepos = ghAll
 
   <!-- Dina kuraterade case -->
   <div id="projects-list">
-    <ProjectsGrid client:load items={projects} />
+    <ProjectsGrid client:visible items={projects} />
   </div>
 
   <!-- Övriga GitHub-repon under, utan dubbletter -->

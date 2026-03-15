@@ -7,7 +7,7 @@ order: 1
 
 ## Översikt
 
-Min kliniska erfarenhet bygger på mötet mellan teknik, funktion och individens vardag. Arbetet handlar inte bara om att identifiera ett behov, utan om att förstå hela sammanhanget: rörelsemönster, belastning, mål, förutsättningar och upplevd komfort.
+2014 drog jag på mig busarongen och började min karriär som legitimerad Ortopedingenjör. Jag jobbade 4 år i Falun där jag fick arbeta med proteser och knäskador. Scanning började komma fram som nyu avgjutningsmetod och jag djupdök i detta. Efter fyra år blev hemlängtan till Skåne för stor och jag flyttade till Ängelholm och började arbeta på deras nybyggda sjukhus. Som en av endast sju anställda fick jag arbeta med allt men hade fortfarande protes som mitt ansvarsområde. Hade hand om gåskolan och åkte även en gång i veckan till Helsingborg för att ta han om deras protespatienter också. Det var roligt med varierande arbetsuppgifter men efter 3år valde jag att flytta ner till Malmö för att fördjupa min kunskap om proteser. I en stor verkstad med stor patientpool, hektisk vardag och mycket ansvar stormtrivdes jag. Jag fick göra proteser till en mängd patienter och många kompexa fall. Kreativitet och problemlösning på en helt annan nivå. Att även få vara handledare till nya unga förmågor var väldigt roligt.
 
 I varje patientmöte har jag arbetat med att skapa en lösning som fungerar både medicinskt och praktiskt. Det innebär att väga in allt från anatomi och aktivitetsnivå till användarvänlighet, passform och långsiktig uppföljning.
 
@@ -16,8 +16,8 @@ I varje patientmöte har jag arbetat med att skapa en lösning som fungerar båd
 Jag arbetar strukturerat genom hela processen, från första bedömning till färdig lösning och uppföljning. Det inkluderar bland annat:
 
 - patientbemötande och behovsanalys
-- klinisk bedömning av funktion och belastning
-- måttagning och dokumentation
+- klinisk bedömning 
+- måttagning och nogrann dokumentation
 - utprovning och justering
 - uppföljning med fokus på komfort, funktion och användning i vardagen
 

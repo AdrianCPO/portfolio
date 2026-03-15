@@ -24,15 +24,19 @@ function joinBase(path: string) {
 
 const MEDIA_H = "h-48 sm:h-52 md:h-56";
 
+type CardMediaProps = {
+  poster?: string;
+  video?: string;
+  title: string;
+  priority?: boolean;
+};
+
 function CardMedia({
   poster,
   video,
   title,
-}: {
-  poster?: string;
-  video?: string;
-  title: string;
-}) {
+  priority = false,
+}: CardMediaProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
   const handleEnter = async () => {
@@ -62,7 +66,8 @@ function CardMedia({
           width={800}
           height={450}
           className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover/media:scale-[1.02] group-hover/media:opacity-0"
-          loading="lazy"
+          loading={priority ? "eager" : "lazy"}
+          fetchPriority={priority ? "high" : "auto"}
           decoding="async"
         />
       )}
@@ -91,11 +96,10 @@ function CardMedia({
   );
 }
 
-
 export default function ProjectsGrid({ items }: Props) {
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {items.map((p) => (
+      {items.map((p, index) => (
         <a
           key={p.slug}
           href={joinBase(`projects/${p.slug}/`)}
@@ -105,16 +109,14 @@ export default function ProjectsGrid({ items }: Props) {
             poster={p.poster ?? p.image}
             video={p.previewVideo}
             title={p.title}
+            priority={index === 0}
           />
 
           <div className="p-4">
             <h3 className="font-semibold">{p.title}</h3>
-              <p className="text-xs opacity-60">{p.slug}</p>
+            <p className="text-xs opacity-60">{p.slug}</p>
 
-            {p.summary && (
-              <p className="mt-1 text-sm opacity-80">{p.summary}</p>
-              
-            )}
+            {p.summary && <p className="mt-1 text-sm opacity-80">{p.summary}</p>}
 
             {p.tags?.length ? (
               <div className="mt-2 flex flex-wrap gap-2 text-xs">
