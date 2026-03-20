@@ -4,12 +4,9 @@ import react from "@astrojs/react";
 
 export default defineConfig({
   integrations: [react()],
-  site: "https://adriancpo.github.io/portfolio",
-  base: "/portfolio/",     // måste sluta med "/"
-  trailingSlash: "always", // matcha dina länkar som slutar på "/"
+  site: "https://adrian-portfolio.vercel.app",
+  base: "/",
+  trailingSlash: "always",
   vite: { plugins: [tailwindcss()] },
-  devToolbar: { enabled: false }, // ⬅️ lägg till
+  devToolbar: { enabled: false },
 });
-
-
- 
