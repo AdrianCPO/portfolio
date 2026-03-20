@@ -25,6 +25,7 @@ const withBase = (p?: string) => {
 const animUrl  = withBase("lottie/main_animation_new.json")!;
 const logoWebm = withBase("lottie/logo.webm");
 const logoMp4  = withBase("lottie/logo.mp4");
+const logoStill = withBase("lottie/Adrian.png");
 
 // Copy
 const name = "Adrian Jönsson";
@@ -84,16 +85,38 @@ const featured = allProjects.slice(0, 3);
     <div class="grid gap-6 sm:grid-cols-[auto,1fr] sm:items-center">
       <div id="name-wrap" class="inline-flex items-center relative">
         <!-- LOGGAN FÖRE TEXTEN -->
-        <video
-          id="logo-anim"
-          class="neon neon-pulse pointer-events-none mr-3
-                 w-[96px] h-[96px] sm:w-[128px] sm:h-[128px]
-                 opacity-0 scale-90 transition duration-300 ease-out"
-          playsinline muted preload="auto"
-        >
-          {logoWebm && <source src={logoWebm} type="video/webm" />}
-          {logoMp4  && <source src={logoMp4}  type="video/mp4"  />}
-        </video>
+{/* Mobil: statisk bild */}
+       {logoStill && (
+        <div class="mr-3 block sm:hidden">
+          <div class="relative h-[96px] w-[96px]">
+            <div class="absolute inset-0 rounded-full bg-white/25 blur-xl scale-125"></div>
+            <div class="absolute inset-0 rounded-full border-2 border-white/90 shadow-[0_0_10px_rgba(255,255,255,0.95),0_0_24px_rgba(255,255,255,0.55),0_0_44px_rgba(255,255,255,0.28)]"></div>
+            <div class="absolute inset-[6px] overflow-hidden rounded-full border border-white/60 bg-slate-900">
+              <img
+                src={logoStill}
+                alt={`${name} porträtt`}
+                class="h-full w-full object-cover"
+                loading="eager"
+                decoding="async"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+{/* Desktop och uppåt: animation */}
+      <video
+        id="logo-anim"
+        class="neon neon-pulse pointer-events-none mr-3 hidden
+              h-[128px] w-[128px] sm:block
+              opacity-0 scale-90 transition duration-300 ease-out"
+        playsinline
+        muted
+        preload="auto"
+      >
+        {logoWebm && <source src={logoWebm} type="video/webm" />}
+        {logoMp4 && <source src={logoMp4} type="video/mp4" />}
+      </video>
 
         <h1 id="name-el" class="text-3xl sm:text-4xl font-bold tracking-tight">
           {name}
@@ -254,14 +277,14 @@ const featured = allProjects.slice(0, 3);
     /** @type {HTMLVideoElement|null} */
     const video = document.getElementById('logo-anim');
 
+    const desktopMedia = window.matchMedia('(min-width: 640px)');
     let playedOnce = false;
 
     function showAndPlay() {
-      if (!video) return;
-      // visa (fade/scale in)
+      if (!video || !desktopMedia.matches) return;
+
       video.classList.add('opacity-100', 'scale-100');
 
-      // spela bara första gången
       if (!playedOnce) {
         try {
           video.currentTime = 0;
@@ -280,7 +303,6 @@ const featured = allProjects.slice(0, 3);
       } catch {}
     });
 
-    // desktop + mobil
     wrap?.addEventListener('mouseenter', showAndPlay, { passive: true });
     wrap?.addEventListener('click', showAndPlay, { passive: true });
   </script>
