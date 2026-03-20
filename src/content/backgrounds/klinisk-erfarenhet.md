@@ -1,34 +1,41 @@
 ---
 title: "Klinisk erfarenhet"
-summary: "Patientbemötande, behovsanalys, mätning och uppföljning med fokus på funktion, komfort och individuella lösningar."
+summary: "Patientbemötande, klinisk bedömning, måttagning och uppföljning med fokus på funktion, komfort och individanpassade lösningar."
 image: "/images/underbensprotes.png"
 order: 1
 ---
 
 ## Översikt
 
-2014 drog jag på mig busarongen och började min karriär som legitimerad Ortopedingenjör. Jag jobbade 4 år i Falun där jag fick arbeta med proteser och knäskador. Scanning började komma fram som nyu avgjutningsmetod och jag djupdök i detta. Efter fyra år blev hemlängtan till Skåne för stor och jag flyttade till Ängelholm och började arbeta på deras nybyggda sjukhus. Som en av endast sju anställda fick jag arbeta med allt men hade fortfarande protes som mitt ansvarsområde. Hade hand om gåskolan och åkte även en gång i veckan till Helsingborg för att ta han om deras protespatienter också. Det var roligt med varierande arbetsuppgifter men efter 3år valde jag att flytta ner till Malmö för att fördjupa min kunskap om proteser. I en stor verkstad med stor patientpool, hektisk vardag och mycket ansvar stormtrivdes jag. Jag fick göra proteser till en mängd patienter och många kompexa fall. Kreativitet och problemlösning på en helt annan nivå. Att även få vara handledare till nya unga förmågor var väldigt roligt.
+Jag är legitimerad ortopedingenjör med över tolv års erfarenhet, främst inom benproteser men med en bred klinisk grund inom ortopedteknik.
 
-I varje patientmöte har jag arbetat med att skapa en lösning som fungerar både medicinskt och praktiskt. Det innebär att väga in allt från anatomi och aktivitetsnivå till användarvänlighet, passform och långsiktig uppföljning.
+Min yrkesresa började 2014 i Falun, där jag under fyra år arbetade med både proteser och knäskador. Det var också där jag tidigt fördjupade mig i scanning som ny avgjutningsmetod och började utveckla ett mer digitalt arbetssätt.
+
+Därefter gick flytten till Ängelholm, där jag arbetade på det nybyggda sjukhuset i en mindre verksamhet med stor bredd. Där fick jag arbeta inom flera delar av ortopedtekniken, samtidigt som proteser fortsatt var mitt huvudsakliga ansvarsområde. Jag ansvarade bland annat för gåskolan och arbetade dessutom återkommande med protespatienter i Helsingborg.
+
+Efter tre år valde jag att gå vidare till Malmö för att fördjupa min kompetens ytterligare inom protesområdet. I en större verksamhet med hög patientvolym, stort ansvar och många komplexa fall utvecklade jag både min tekniska och kliniska förmåga. Arbetet krävde stor noggrannhet, kreativitet och problemlösningsförmåga, och jag hade även möjlighet att handleda yngre kollegor.
+
+I varje patientmöte strävar jag efter att skapa lösningar som fungerar både medicinskt och praktiskt. Det innebär att väga in allt från anatomi och aktivitetsnivå till passform, användarvänlighet och långsiktig uppföljning.
+
 
 ## Arbetssätt
 
 Jag arbetar strukturerat genom hela processen, från första bedömning till färdig lösning och uppföljning. Det inkluderar bland annat:
 
 - patientbemötande och behovsanalys
-- klinisk bedömning 
-- måttagning och nogrann dokumentation
+- klinisk bedömning
+- måttagning och noggrann dokumentation
 - utprovning och justering
 - uppföljning med fokus på komfort, funktion och användning i vardagen
 
 ## Fokus i det kliniska arbetet
 
-Det viktigaste för mig i det kliniska arbetet är att översätta observationer och behov till något konkret och användbart. En bra lösning ska inte bara fungera i teorin, utan i verkliga situationer — i arbete, aktivitet och vardag.
+För mig handlar kliniskt arbete om att omsätta observationer och behov till något konkret, funktionellt och användbart. En bra lösning ska inte bara fungera i teorin, utan också i vardagen, på arbetet och i aktivitet.
 
-Jag lägger därför stor vikt vid att lyssna in användaren, tydliggöra målsättningar och arbeta iterativt med justeringar när det behövs. Det skapar bättre förutsättningar för en lösning som faktiskt används och gör nytta över tid.
+Jag lägger därför stor vikt vid att lyssna in användaren, tydliggöra målsättningar och arbeta stegvis med justeringar när det behövs. Det skapar bättre förutsättningar för en lösning som används, fungerar över tid och gör verklig skillnad.
 
-## Det här tar jag med mig
+## Det här tillför jag
 
-Den kliniska delen av ortopedtekniken har gett mig en stark förståelse för hur små detaljer påverkar helheten. Passform, kommunikation, förtroende och uppföljning är ofta avgörande för resultatet.
+Jag bidrar med lång erfarenhet av komplexa protesfall i kombination med en bred klinisk förståelse för ortopedteknikens olika områden. Det gör att jag kan se både detaljerna i den enskilda lösningen och helheten kring patientens behov.
 
-Det har också gett mig ett arbetssätt där analys och empati behöver gå hand i hand — där teknisk precision blir som bäst när den utgår från människans faktiska behov.
+Genom certifiering inom microprocessorknän och utbildning i motiverande samtal har jag också stärkt min förmåga att hantera avancerade patientfall, både tekniskt och i mötet med individen.
